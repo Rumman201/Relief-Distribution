@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 public class SurvivorDashboard extends AppCompatActivity {
 
     LinearLayout linearLayout, linearLayout2, linearLayout3, linearLayout4, linearLayout5, linearLayout6;
+    LinearLayout linearLayout7, linearLayout8;
 
     private ImageView ivHomeIcon, ivChatIcon, ivNotificationIcon, ivProfileIcon;
 
@@ -30,6 +31,8 @@ public class SurvivorDashboard extends AppCompatActivity {
         linearLayout4 = findViewById(R.id.linearLayout4);
         linearLayout5 = findViewById(R.id.linearLayout5);
         linearLayout6 = findViewById(R.id.linearLayout6);
+        linearLayout7 = findViewById(R.id.linearLayout7);
+        linearLayout8 = findViewById(R.id.linearLayout8);
 
         ivHomeIcon = findViewById(R.id.ivHomeIcon);
         ivChatIcon = findViewById(R.id.ivChatIcon);
@@ -50,8 +53,23 @@ public class SurvivorDashboard extends AppCompatActivity {
             Intent intent = new Intent(this, Informations.class);
             startActivity(intent);
         });
+        
+        linearLayout7.setOnClickListener(view -> {
+            Intent intent = new Intent(this, CreateReliefRequestActivity.class);
+            startActivity(intent);
+        });
+        
+        linearLayout8.setOnClickListener(view -> {
+            Intent intent = new Intent(this, MyReliefRequestsActivity.class);
+            startActivity(intent);
+        });
+
         ivProfileIcon.setOnClickListener(view -> {
             Intent intent = new Intent(SurvivorDashboard.this, Profile.class);
+            startActivity(intent);
+        });
+        ivNotificationIcon.setOnClickListener(view -> {
+            Intent intent = new Intent(SurvivorDashboard.this, NotificationsActivity.class);
             startActivity(intent);
         });
 

@@ -200,6 +200,54 @@
                     android:layout_marginTop="10dp"/>
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/linearLayout7"
+                android:layout_width="120dp"
+                android:layout_height="100dp"
+                android:orientation="vertical"
+                tools:layout_editor_absoluteX="20dp"
+                tools:layout_editor_absoluteY="20dp">
+                <ImageView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_add_request" />
+
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="30dp"
+                    android:gravity="center"
+                    android:text="Create Request"
+                    android:textColor="@color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linearLayout8"
+                android:layout_width="120dp"
+                android:layout_height="100dp"
+                android:orientation="vertical"
+                tools:layout_editor_absoluteX="20dp"
+                tools:layout_editor_absoluteY="20dp">
+                <ImageView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_my_requests" />
+
+                <TextView
+                    android:layout_width="120dp"
+                    android:layout_height="30dp"
+                    android:gravity="center"
+                    android:text="My Requests"
+                    android:textColor="@color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"/>
+            </LinearLayout>
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

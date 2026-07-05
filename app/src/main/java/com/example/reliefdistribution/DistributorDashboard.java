@@ -18,7 +18,8 @@ import androidx.core.content.ContextCompat;
 public class DistributorDashboard extends AppCompatActivity {
 
     private Switch distributeModeSwitch;
-    private LinearLayout ltrackig, lEmergency, lFeatures, lSettings;
+    private LinearLayout lTracking, lEmergency, lFeatures, lSettings;
+    private LinearLayout lInventory, lManageRequests;
     private boolean isDistributeModeOn;
 
     private ImageView ivHomeIcon, ivChatIcon, ivNotificationIcon, ivProfileIcon;
@@ -29,16 +30,18 @@ public class DistributorDashboard extends AppCompatActivity {
         setContentView(R.layout.activity_distributor_dashboard);
 
         distributeModeSwitch = findViewById(R.id.switch_on_off);
-        ltrackig = findViewById(R.id.lTracking);
+        lTracking = findViewById(R.id.lTracking);
         lEmergency = findViewById(R.id.lEmergency);
         lFeatures = findViewById(R.id.lFeatures);
         lSettings = findViewById(R.id.lSettings);
+        lInventory = findViewById(R.id.lInventory);
+        lManageRequests = findViewById(R.id.lManageRequests);
         ivHomeIcon = findViewById(R.id.ivHomeIcon);
         ivChatIcon = findViewById(R.id.ivChatIcon);
         ivNotificationIcon = findViewById(R.id.ivNotificationIcon);
         ivProfileIcon = findViewById(R.id.ivProfileIcon);
 
-         distributeModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        distributeModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isDistributeModeOn = isChecked;
             if (isChecked) {
                 Toast.makeText(this, "Distribute Mode ON", Toast.LENGTH_SHORT).show();
@@ -47,7 +50,7 @@ public class DistributorDashboard extends AppCompatActivity {
             }
         });
 
-        ltrackig.setOnClickListener(view -> {
+        lTracking.setOnClickListener(view -> {
             Intent intent = new Intent(DistributorDashboard.this, GoogleMap.class);
             intent.putExtra("distributeMode", isDistributeModeOn);
             startActivity(intent);
@@ -61,12 +64,25 @@ public class DistributorDashboard extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 1);
             }
         });
+        lInventory.setOnClickListener(view -> {
+            Intent intent = new Intent(DistributorDashboard.this, InventoryManagementActivity.class);
+            startActivity(intent);
+        });
+        lManageRequests.setOnClickListener(view -> {
+            Intent intent = new Intent(DistributorDashboard.this, ManageRequestsActivity.class);
+            startActivity(intent);
+        });
         ivProfileIcon.setOnClickListener(view -> {
             Intent intent = new Intent(DistributorDashboard.this, Profile.class);
             startActivity(intent);
         });
         ivHomeIcon.setOnClickListener(view -> {
             Intent intent = new Intent(DistributorDashboard.this, DistributorDashboard.class);
+            startActivity(intent);
+        });
+        ivNotificationIcon.setOnClickListener(view -> {
+            Intent intent = new Intent(DistributorDashboard.this, NotificationsActivity.class);
+            startActivity(intent);
         });
 
     }

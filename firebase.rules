@@ -1,0 +1,121 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        "role": {
+          ".validate": "newData.isString() && (newData.val() == 'survivor' || newData.val() == 'distributor')"
+        },
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().contains('@')"
+        },
+        "phone": {
+          ".validate": "newData.isString() && newData.val().length >= 10"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        }
+      }
+    },
+    "ReliefRequests": {
+      "$requestId": {
+        ".read": "auth != null && (data.child('survivorId').val() == auth.uid || data.child('distributorId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'distributor')",
+        ".write": "auth != null && (newData.hasChildren(['survivorId', 'survivorName', 'itemName', 'quantity', 'priority', 'status']) || !newData.exists())",
+        ".validate": "newData.hasChildren(['survivorId', 'survivorName', 'itemName', 'quantity', 'priority', 'status'])",
+        "survivorId": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "survivorName": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "itemName": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "quantity": {
+          ".validate": "newData.isNumber() && newData.val() > 0"
+        },
+        "priority": {
+          ".validate": "newData.isString() && (newData.val() == 'low' || newData.val() == 'medium' || newData.val() == 'high' || newData.val() == 'urgent')"
+        },
+        "status": {
+          ".validate": "newData.isString() && (newData.val() == 'pending' || newData.val() == 'accepted' || newData.val() == 'in_progress' || newData.val() == 'completed' || newData.val() == 'cancelled')"
+        },
+        "timestamp": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        }
+      },
+      ".indexOn": ["survivorId", "distributorId", "status", "priority", "timestamp"]
+    },
+    "Inventory": {
+      "$itemId": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() == 'distributor'",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() == 'distributor' && (newData.hasChildren(['name', 'category', 'quantity', 'unit']) || !newData.exists())",
+        ".validate": "newData.hasChildren(['name', 'category', 'quantity', 'unit'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "category": {
+          ".validate": "newData.isString() && (newData.val() == 'FOOD' || newData.val() == 'WATER' || newData.val() == 'MEDICINE' || newData.val() == 'CLOTHING' || newData.val() == 'SHELTER' || newData.val() == 'HYGIENE' || newData.val() == 'OTHER')"
+        },
+        "quantity": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "unit": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "availableQuantity": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "reservedQuantity": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "threshold": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        }
+      },
+      ".indexOn": ["category", "quantity", "availableQuantity"]
+    },
+    "Notifications": {
+      "$notificationId": {
+        ".read": "auth != null && data.child('userId').val() == auth.uid",
+        ".write": "auth != null && (newData.hasChildren(['userId', 'type', 'title', 'message', 'timestamp', 'read']) || !newData.exists())",
+        ".validate": "newData.hasChildren(['userId', 'type', 'title', 'message', 'timestamp', 'read'])",
+        "userId": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "type": {
+          ".validate": "newData.isString() && (newData.val() == 'REQUEST_CREATED' || newData.val() == 'REQUEST_ACCEPTED' || newData.val() == 'REQUEST_IN_PROGRESS' || newData.val() == 'REQUEST_COMPLETED' || newData.val() == 'REQUEST_CANCELLED' || newData.val() == 'INVENTORY_LOW' || newData.val() == 'INVENTORY_OUT_OF_STOCK' || newData.val() == 'GENERAL')"
+        },
+        "title": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "message": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "timestamp": {
+          ".validate": "newData.isNumber() && newData.val() <= now"
+        },
+        "read": {
+          ".validate": "newData.isBoolean()"
+        }
+      },
+      ".indexOn": ["userId", "timestamp", "read"]
+    }
+  }
+}
