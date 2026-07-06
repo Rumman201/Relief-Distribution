@@ -10,6 +10,8 @@ import android.widget.Switch;
 import android.widget.Toast;
 import android.Manifest;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -24,10 +26,19 @@ public class DistributorDashboard extends AppCompatActivity {
 
     private ImageView ivHomeIcon, ivChatIcon, ivNotificationIcon, ivProfileIcon;
 
+    // Firebase instances
+    private FirebaseAuth mAuth;
+    private FirebaseDatabase database;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_distributor_dashboard);
+
+        // Initialize Firebase
+        mAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
+        database.setPersistenceEnabled(true);
 
         distributeModeSwitch = findViewById(R.id.switch_on_off);
         lTracking = findViewById(R.id.lTracking);
