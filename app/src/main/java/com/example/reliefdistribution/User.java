@@ -1,27 +1,49 @@
 package com.example.reliefdistribution;
 
+import com.google.firebase.database.IgnoreExtraProperties;
+
+import java.util.Objects;
+import java.util.regex.Pattern;
+
+@IgnoreExtraProperties
 public class User {
+
+    public static final String ROLE_DISTRIBUTOR = "Distributor";
+    public static final String ROLE_SURVIVOR = "Survivor";
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE
+    );
+
     private String userId;
     private String firstName;
     private String lastName;
     private String email;
     private String phone;
     private String role;
-    private String password;
-
 
     public User() {}
 
-    public User(String userId, String firstName, String lastName, String email, String phone, String role, String password) {
+    public User(String userId, String firstName, String lastName, String email, String phone, String role) {
         this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phone = phone;
         this.role = role;
-        this.password = password;
     }
 
+    public static boolean isValidRole(String role) {
+        return ROLE_DISTRIBUTOR.equals(role) || ROLE_SURVIVOR.equals(role);
+    }
+
+    public static boolean isValidEmail(String email) {
+        return email != null && EMAIL_PATTERN.matcher(email.trim()).matches();
+    }
+
+    public static boolean isValidPhone(String phone) {
+        return phone != null && phone.trim().length() >= 7 && phone.trim().length() <= 15;
+    }
 
     public String getUserId() {
         return userId;
@@ -71,13 +93,18 @@ public class User {
         this.role = role;
     }
 
-    public String getPassword() {
-        return password;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(userId, user.userId) &&
+                Objects.equals(email, user.email) &&
+                Objects.equals(role, user.role);
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId, email, role);
     }
 }
-
-

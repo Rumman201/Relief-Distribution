@@ -41,6 +41,8 @@ public class ReliefRequest {
     private double latitude;
     private double longitude;
     private String category;
+    private int aiUrgencyScore;
+    private String aiPriorityTier;
 
     public ReliefRequest() {
         // Default constructor required for Firebase
@@ -251,6 +253,22 @@ public class ReliefRequest {
         this.createdAt = createdAt;
     }
 
+    public int getAiUrgencyScore() {
+        return aiUrgencyScore;
+    }
+
+    public void setAiUrgencyScore(int aiUrgencyScore) {
+        this.aiUrgencyScore = aiUrgencyScore;
+    }
+
+    public String getAiPriorityTier() {
+        return aiPriorityTier;
+    }
+
+    public void setAiPriorityTier(String aiPriorityTier) {
+        this.aiPriorityTier = aiPriorityTier;
+    }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -277,6 +295,8 @@ public class ReliefRequest {
         result.put("latitude", latitude);
         result.put("longitude", longitude);
         result.put("category", category);
+        result.put("aiUrgencyScore", aiUrgencyScore);
+        result.put("aiPriorityTier", aiPriorityTier);
         return result;
     }
 
@@ -287,18 +307,28 @@ public class ReliefRequest {
         request.setSurvivorId((String) map.get("survivorId"));
         request.setSurvivorName((String) map.get("survivorName"));
         request.setSurvivorPhone((String) map.get("survivorPhone"));
-        request.setSurvivorLatitude(((Number) map.get("survivorLatitude")).doubleValue());
-        request.setSurvivorLongitude(((Number) map.get("survivorLongitude")).doubleValue());
+        if (map.get("survivorLatitude") != null) {
+            request.setSurvivorLatitude(((Number) map.get("survivorLatitude")).doubleValue());
+        }
+        if (map.get("survivorLongitude") != null) {
+            request.setSurvivorLongitude(((Number) map.get("survivorLongitude")).doubleValue());
+        }
         request.setSurvivorAddress((String) map.get("survivorAddress"));
         request.setItemName((String) map.get("itemName"));
         request.setItemCategory((String) map.get("itemCategory"));
-        request.setQuantity(((Number) map.get("quantity")).intValue());
+        if (map.get("quantity") != null) {
+            request.setQuantity(((Number) map.get("quantity")).intValue());
+        }
         request.setPriority((String) map.get("priority"));
         request.setStatus((String) map.get("status"));
         request.setDistributorId((String) map.get("distributorId"));
         request.setDistributorName((String) map.get("distributorName"));
-        request.setTimestamp(((Number) map.get("timestamp")).longValue());
-        request.setUpdatedAt(((Number) map.get("updatedAt")).longValue());
+        if (map.get("timestamp") != null) {
+            request.setTimestamp(((Number) map.get("timestamp")).longValue());
+        }
+        if (map.get("updatedAt") != null) {
+            request.setUpdatedAt(((Number) map.get("updatedAt")).longValue());
+        }
         if (map.get("createdAt") != null) {
             request.setCreatedAt(((Number) map.get("createdAt")).longValue());
         }
@@ -312,6 +342,12 @@ public class ReliefRequest {
             request.setLongitude(((Number) map.get("longitude")).doubleValue());
         }
         request.setCategory((String) map.get("category"));
+        if (map.get("aiUrgencyScore") != null) {
+            request.setAiUrgencyScore(((Number) map.get("aiUrgencyScore")).intValue());
+        }
+        if (map.get("aiPriorityTier") != null) {
+            request.setAiPriorityTier((String) map.get("aiPriorityTier"));
+        }
         return request;
     }
 }

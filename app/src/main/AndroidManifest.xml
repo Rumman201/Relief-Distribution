@@ -6,16 +6,15 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission
-        android:name="android.permission.CALL_PHONE"
-        tools:ignore="PermissionImpliesUnsupportedChromeOsHardware" />
 
     <application
+        android:name=".ReliefApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ReliefDistribution"
@@ -27,7 +26,26 @@
             android:name=".Informations"
             android:exported="false" />
         <activity
+            android:name=".MapActivity"
+            android:exported="false" />
+        <activity
             android:name=".GoogleMap"
+            android:exported="false" />
+        <activity
+            android:name=".CreateReliefRequestActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".MyReliefRequestsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ManageRequestsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".InventoryManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NotificationsActivity"
             android:exported="false" />
         <activity
             android:name=".SurvivorDashboard"
@@ -37,15 +55,14 @@
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".SignUpActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".WelcomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
             android:exported="false" />
         <activity
             android:name=".StartActivity"
@@ -59,7 +76,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/my_map_api_key" />
+            android:value="${MAPS_API_KEY}" />
     </application>
 
 </manifest>

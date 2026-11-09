@@ -1,0 +1,96 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "Users": {
+      ".read": "auth != null",
+      "$userId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $userId",
+        ".validate": "newData.hasChildren(['firstName', 'lastName', 'email', 'phone', 'role']) && newData.child('role').val().matches(/^(Distributor|Survivor|distributor|survivor)$/) && (!data.exists() || data.child('role').val() === newData.child('role').val())",
+        "email": {
+          ".validate": "newData.isString() && newData.val().contains('@') && newData.val().length <= 256"
+        },
+        "phone": {
+          ".validate": "newData.isString() && newData.val().length >= 7 && newData.val().length <= 20"
+        },
+        "firstName": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "lastName": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "location": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid === $userId",
+          ".validate": "newData.hasChildren(['latitude', 'longitude', 'timestamp']) && newData.child('latitude').isNumber() && newData.child('latitude').val() >= -90.0 && newData.child('latitude').val() <= 90.0 && newData.child('longitude').isNumber() && newData.child('longitude').val() >= -180.0 && newData.child('longitude').val() <= 180.0 && newData.child('timestamp').isNumber()"
+        }
+      }
+    },
+
+    "ReliefRequests": {
+      ".read": "auth != null",
+      ".indexOn": ["survivorId", "userId", "status", "priority", "timestamp", "createdAt"],
+      "$requestId": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && (newData.child('survivorId').val() === auth.uid || newData.child('userId').val() === auth.uid)) || (data.exists() && (data.child('survivorId').val() === auth.uid || data.child('userId').val() === auth.uid) && (newData.child('status').val() === 'cancelled' || newData.child('status').val() === 'CANCELLED' || data.child('status').val() === 'pending' || data.child('status').val() === 'PENDING')) || (root.child('Users').child(auth.uid).child('role').val() === 'Distributor' || root.child('Users').child(auth.uid).child('role').val() === 'distributor'))",
+        ".validate": "newData.hasChildren(['status']) && newData.child('status').val().matches(/^(pending|accepted|in_progress|completed|cancelled|PENDING|ACCEPTED|EN_ROUTE|FULFILLED|CANCELLED)$/)",
+        "quantity": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() > 0 && newData.val() <= 10000)"
+        },
+        "latitude": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= -90.0 && newData.val() <= 90.0)"
+        },
+        "longitude": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= -180.0 && newData.val() <= 180.0)"
+        },
+        "survivorLatitude": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= -90.0 && newData.val() <= 90.0)"
+        },
+        "survivorLongitude": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= -180.0 && newData.val() <= 180.0)"
+        }
+      }
+    },
+
+    "Inventory": {
+      ".read": "auth != null",
+      ".indexOn": ["distributorId", "category", "quantityAvailable", "lastUpdated"],
+      "$itemId": {
+        ".write": "auth != null && (root.child('Users').child(auth.uid).child('role').val() === 'Distributor' || root.child('Users').child(auth.uid).child('role').val() === 'distributor')",
+        ".validate": "newData.hasChildren(['distributorId', 'category']) && (newData.hasChild('itemName') || newData.hasChild('name'))",
+        "quantityAvailable": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0)"
+        },
+        "quantityReserved": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0)"
+        },
+        "distributorId": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        }
+      }
+    },
+
+    "Notifications": {
+      "$userId": {
+        ".read": "auth != null && $userId === auth.uid",
+        ".indexOn": ["timestamp", "read", "isRead"],
+        "$notificationId": {
+          ".read": "auth != null && $userId === auth.uid",
+          ".write": "auth != null && ($userId === auth.uid || root.child('Users').child(auth.uid).child('role').val() === 'Distributor' || root.child('Users').child(auth.uid).child('role').val() === 'distributor')",
+          ".validate": "newData.hasChildren(['userId', 'title', 'message', 'type']) && newData.child('userId').val() === $userId"
+        }
+      }
+    },
+
+    "DisasterAlerts": {
+      ".read": "auth != null",
+      ".indexOn": ["isActive", "issuedAt", "severity"],
+      "$alertId": {
+        ".write": "auth != null && (root.child('Users').child(auth.uid).child('role').val() === 'Distributor' || root.child('Users').child(auth.uid).child('role').val() === 'distributor')",
+        ".validate": "newData.hasChildren(['alertId', 'title', 'severity']) && newData.child('severity').val().matches(/^(LOW|MEDIUM|HIGH|CRITICAL)$/)"
+      }
+    }
+  }
+}

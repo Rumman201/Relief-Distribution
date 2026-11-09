@@ -1,100 +1,131 @@
 package com.example.reliefdistribution;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.Switch;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
-import android.Manifest;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
+import com.example.reliefdistribution.data.repository.ConnectionRepository;
+import com.example.reliefdistribution.data.repository.FirebaseConnectionRepository;
+import com.example.reliefdistribution.databinding.ActivityDistributorDashboardBinding;
+
+/**
+ * DistributorDashboard provides relief coordination controls, GPS tracking toggle,
+ * live connectivity status, and emergency hotline access for relief distributors.
+ * Upgraded in Phase 4 with Material 3 styling, 48dp touch targets, and entrance motion.
+ */
 public class DistributorDashboard extends AppCompatActivity {
 
-    private Switch distributeModeSwitch;
-    private LinearLayout lTracking, lEmergency, lFeatures, lSettings;
-    private LinearLayout lInventory, lManageRequests;
+    private ActivityDistributorDashboardBinding binding;
+    private ConnectionRepository connectionRepository;
     private boolean isDistributeModeOn;
-
-    private ImageView ivHomeIcon, ivChatIcon, ivNotificationIcon, ivProfileIcon;
-
-    // Firebase instances
-    private FirebaseAuth mAuth;
-    private FirebaseDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_distributor_dashboard);
+        binding = ActivityDistributorDashboardBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        // Initialize Firebase
-        mAuth = FirebaseAuth.getInstance();
-        database = FirebaseDatabase.getInstance();
-        database.setPersistenceEnabled(true);
+        // Animate entrance
+        binding.cardDistributeMode.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in));
+        binding.lEmergency.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in));
 
-        distributeModeSwitch = findViewById(R.id.switch_on_off);
-        lTracking = findViewById(R.id.lTracking);
-        lEmergency = findViewById(R.id.lEmergency);
-        lFeatures = findViewById(R.id.lFeatures);
-        lSettings = findViewById(R.id.lSettings);
-        lInventory = findViewById(R.id.lInventory);
-        lManageRequests = findViewById(R.id.lManageRequests);
-        ivHomeIcon = findViewById(R.id.ivHomeIcon);
-        ivChatIcon = findViewById(R.id.ivChatIcon);
-        ivNotificationIcon = findViewById(R.id.ivNotificationIcon);
-        ivProfileIcon = findViewById(R.id.ivProfileIcon);
+        connectionRepository = new FirebaseConnectionRepository();
+        connectionRepository.isConnected().observe(this, isConnected -> {
+            if (binding.tvConnectionStatus != null) {
+                if (Boolean.TRUE.equals(isConnected)) {
+                    binding.tvConnectionStatus.setText(R.string.status_online);
+                    binding.tvConnectionStatus.setTextColor(getColor(R.color.status_online));
+                    binding.tvConnectionStatus.setBackgroundResource(R.drawable.badge_online);
+                } else {
+                    binding.tvConnectionStatus.setText(R.string.status_offline);
+                    binding.tvConnectionStatus.setTextColor(getColor(R.color.status_offline));
+                    binding.tvConnectionStatus.setBackgroundResource(R.drawable.badge_offline);
+                }
+            }
+        });
 
-        distributeModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        binding.switchOnOff.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isDistributeModeOn = isChecked;
             if (isChecked) {
-                Toast.makeText(this, "Distribute Mode ON", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Distribute Mode ON - Location broadcast enabled", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Distribute Mode OFF", Toast.LENGTH_SHORT).show();
             }
         });
 
-        lTracking.setOnClickListener(view -> {
-            Intent intent = new Intent(DistributorDashboard.this, GoogleMap.class);
+        binding.lTracking.setOnClickListener(view -> {
+            Intent intent = new Intent(DistributorDashboard.this, MapActivity.class);
             intent.putExtra("distributeMode", isDistributeModeOn);
             startActivity(intent);
         });
-        lEmergency.setOnClickListener(view -> {
-            Intent intent = new Intent(Intent.ACTION_CALL);
+
+        // Safe emergency dialing without requiring dangerous CALL_PHONE permission
+        binding.lEmergency.setOnClickListener(view -> {
+            Intent intent = new Intent(Intent.ACTION_DIAL);
             intent.setData(Uri.parse("tel:999"));
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                startActivity(intent);
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 1);
-            }
-        });
-        lInventory.setOnClickListener(view -> {
-            Intent intent = new Intent(DistributorDashboard.this, InventoryManagementActivity.class);
-            startActivity(intent);
-        });
-        lManageRequests.setOnClickListener(view -> {
-            Intent intent = new Intent(DistributorDashboard.this, ManageRequestsActivity.class);
-            startActivity(intent);
-        });
-        ivProfileIcon.setOnClickListener(view -> {
-            Intent intent = new Intent(DistributorDashboard.this, Profile.class);
-            startActivity(intent);
-        });
-        ivHomeIcon.setOnClickListener(view -> {
-            Intent intent = new Intent(DistributorDashboard.this, DistributorDashboard.class);
-            startActivity(intent);
-        });
-        ivNotificationIcon.setOnClickListener(view -> {
-            Intent intent = new Intent(DistributorDashboard.this, NotificationsActivity.class);
             startActivity(intent);
         });
 
+        binding.ivProfileIcon.setOnClickListener(view -> {
+            Intent intent = new Intent(DistributorDashboard.this, Profile.class);
+            startActivity(intent);
+        });
+
+        binding.ivHomeIcon.setOnClickListener(view -> {
+            Toast.makeText(this, "Home Dashboard", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.ivChatIcon.setOnClickListener(view -> {
+            Toast.makeText(this, "Emergency Dispatch Channel: Broadcast live alerts", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.ivNotificationIcon.setOnClickListener(view -> {
+            Intent intent = new Intent(this, NotificationsActivity.class);
+            startActivity(intent);
+        });
+
+        if (binding.lFeatures != null) {
+            binding.lFeatures.setOnClickListener(view -> {
+                String[] operations = {"Manage Relief Requests", "Inventory & Cargo Depot"};
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                        .setTitle("Relief Operations")
+                        .setItems(operations, (dialog, which) -> {
+                            if (which == 0) {
+                                startActivity(new Intent(DistributorDashboard.this, ManageRequestsActivity.class));
+                            } else {
+                                startActivity(new Intent(DistributorDashboard.this, InventoryManagementActivity.class));
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        }
+
+        if (binding.lSettings != null) {
+            binding.lSettings.setOnClickListener(view -> {
+                Intent intent = new Intent(DistributorDashboard.this, Profile.class);
+                startActivity(intent);
+            });
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (connectionRepository != null) {
+            connectionRepository.startMonitoring();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (connectionRepository != null) {
+            connectionRepository.stopMonitoring();
+        }
     }
 }

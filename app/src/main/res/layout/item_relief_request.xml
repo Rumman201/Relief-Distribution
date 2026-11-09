@@ -199,6 +199,14 @@
             android:textSize="12sp"
             android:visibility="gone" />
 
+        <!-- Status Indicator Strip -->
+        <View
+            android:id="@+id/statusBadge"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/primary" />
+
         <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -209,10 +217,10 @@
             <Button
                 android:id="@+id/btnViewDetails"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="44dp"
                 android:layout_weight="5"
                 android:layout_marginEnd="4dp"
-                android:backgroundTint="@color/design_default_color_primary"
+                android:backgroundTint="@color/primary"
                 android:text="View Details"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
@@ -220,11 +228,59 @@
             <Button
                 android:id="@+id/btnCancelRequest"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="44dp"
                 android:layout_weight="5"
                 android:layout_marginStart="4dp"
-                android:backgroundTint="@color/design_default_color_error"
+                android:backgroundTint="@color/emergency_red"
                 android:text="Cancel"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnAccept"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="5"
+                android:layout_marginEnd="4dp"
+                android:backgroundTint="@color/primary"
+                android:text="Accept"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnStartDelivery"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="5"
+                android:layout_marginEnd="4dp"
+                android:backgroundTint="@color/primary"
+                android:text="Start Delivery"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnComplete"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="5"
+                android:layout_marginEnd="4dp"
+                android:backgroundTint="@color/status_online"
+                android:text="Complete"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnViewMap"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="5"
+                android:layout_marginStart="4dp"
+                android:backgroundTint="@color/secondary"
+                android:text="View Map"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:visibility="gone" />

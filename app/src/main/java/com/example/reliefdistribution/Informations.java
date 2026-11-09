@@ -2,40 +2,45 @@ package com.example.reliefdistribution;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
+import android.view.animation.AnimationUtils;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
+import com.example.reliefdistribution.databinding.ActivityInformationsBinding;
+
+/**
+ * Informations activity provides disaster preparedness advisories and safety guides.
+ * Upgraded in Phase 4 with Material 3 styling, structured crisis advisories, and 48dp touch targets.
+ */
 public class Informations extends AppCompatActivity {
 
-    ImageView ivHomeIcon, ivChatIcon, ivNotificationIcon, ivProfileIcon;
+    private ActivityInformationsBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_informations);
+        binding = ActivityInformationsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        ivHomeIcon = findViewById(R.id.ivHomeIcon);
-        ivChatIcon = findViewById(R.id.ivChatIcon);
-        ivNotificationIcon = findViewById(R.id.ivNotificationIcon);
-        ivProfileIcon = findViewById(R.id.ivProfileIcon);
+        // Apply smooth entrance motion
+        binding.tvInformations.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in));
 
-        ivHomeIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Informations.this, SurvivorDashboard.class));
-                finish();
-            }
+        binding.ivHomeIcon.setOnClickListener(v -> {
+            startActivity(new Intent(Informations.this, SurvivorDashboard.class));
+            finish();
         });
-        ivProfileIcon.setOnClickListener(view -> {
+
+        binding.ivProfileIcon.setOnClickListener(view -> {
             Intent intent = new Intent(Informations.this, Profile.class);
             startActivity(intent);
         });
 
+        binding.ivChatIcon.setOnClickListener(view -> {
+            // Placeholder for community advisory chat in Phase 5
+        });
+
+        binding.ivNotificationIcon.setOnClickListener(view -> {
+            // Placeholder for real-time safety bulletins in Phase 5
+        });
     }
 }

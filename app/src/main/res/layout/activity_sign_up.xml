@@ -1,152 +1,206 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:background="#CFDBE3"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/background"
     tools:context=".SignUpActivity">
 
-    <TextView
-        android:id="@+id/textView2"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:text="Let’s Get Started"
-        android:textSize="24sp"
-        android:textColor="@color/black"
-        android:textStyle="bold|italic" />
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_l">
 
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:gravity="center"
-        android:text="Create your own account"
-        android:textSize="24sp"
-        android:textColor="@color/black"
-        android:layout_marginBottom="20dp"/>
+        <!-- Top Header Section -->
+        <TextView
+            android:id="@+id/tvSignUpBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/spacing_m"
+            android:background="@drawable/badge_role"
+            android:text="REGISTRATION"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/text_size_caption"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="582dp"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:elevation="20dp"
-        app:cardCornerRadius="30dp"
-        android:layout_weight="1">
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvSignUpTitle"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/border"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:gravity="center"
+            android:text="Create Your Account"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_size_headline"
+            android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/tvSignUpSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:layout_marginBottom="@dimen/spacing_l"
+            android:gravity="center"
+            android:text="Join the humanitarian relief and emergency response network"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_size_body" />
 
-            <TextView
-                android:id="@+id/textView5"
+        <!-- Form Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSignUpForm"
+            style="@style/Widget.Relief.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_l">
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginBottom="20dp"
-                android:gravity="center"
-                android:text="Sign Up"
-                android:textSize="30sp"
-                android:textStyle="bold" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_m">
 
-            <EditText
-                android:id="@+id/etFName"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/border"
-                android:ems="10"
-                android:hint="First Name"
-                android:inputType="text"
-                android:padding="10dp"
-                android:textSize="20sp" />
+                <!-- First Name -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Relief.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="First Name">
 
-            <EditText
-                android:id="@+id/etLName"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/border"
-                android:ems="10"
-                android:hint="Last Name"
-                android:inputType="text"
-                android:padding="10dp"
-                android:textSize="20sp" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etFName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName|textCapWords"
+                        android:maxLines="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/etEmail"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/border"
-                android:ems="10"
-                android:inputType="textEmailAddress"
-                android:hint="Email"
-                android:padding="10dp" />
-            <EditText
-                android:id="@+id/etPhoneNumber"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/border"
-                android:ems="10"
-                android:hint="Phone Number"
-                android:inputType="phone"
-                android:padding="10dp" />
+                <!-- Last Name -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Relief.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Last Name">
 
-            <Spinner
-                android:id="@+id/dropdown_menu"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginBottom="10dp"
-                android:padding="10dp"
-                android:background="@drawable/spinner_background"
-                android:spinnerMode="dropdown" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etLName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName|textCapWords"
+                        android:maxLines="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/etPassword"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/border"
-                android:ems="10"
-                android:inputType="textPassword"
-                android:hint="Password"
-                android:padding="10dp" />
+                <!-- Email -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Relief.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Email Address">
 
-            <EditText
-                android:id="@+id/etConfirmPassword"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="@drawable/border"
-                android:ems="10"
-                android:inputType="textPassword"
-                android:hint="Confirm Password"
-                android:padding="10dp" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textEmailAddress"
+                        android:maxLines="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/btSignUp"
-        android:layout_width="213dp"
-        android:layout_height="60dp"
-        android:layout_gravity="center"
-        android:backgroundTint="@color/black"
-        android:gravity="center"
-        android:text="Sign Up"
-        android:textColor="@color/white"
-        android:textColorLink="@color/white"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="20dp"
-        android:layout_marginTop="20dp"/>
-</LinearLayout>
+                <!-- Phone -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Relief.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Phone Number">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPhoneNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="phone"
+                        android:maxLines="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Role Selector Label -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:layout_marginBottom="@dimen/spacing_xs"
+                    android:text="Account Role"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_size_label"
+                    android:textStyle="bold" />
+
+                <!-- Role Spinner -->
+                <Spinner
+                    android:id="@+id/dropdown_menu"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_field_height"
+                    android:layout_marginBottom="@dimen/spacing_s"
+                    android:background="@drawable/spinner_background"
+                    android:padding="@dimen/spacing_s"
+                    android:spinnerMode="dropdown" />
+
+                <!-- Password -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Relief.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Password (min 6 characters)"
+                    app:passwordToggleEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:maxLines="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Confirm Password -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Relief.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Confirm Password"
+                    app:passwordToggleEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etConfirmPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:maxLines="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Submit Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btSignUp"
+            style="@style/Widget.Relief.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginBottom="@dimen/spacing_xl"
+            android:text="Create Account"
+            android:textSize="@dimen/text_size_title" />
+
+    </LinearLayout>
+</ScrollView>

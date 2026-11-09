@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background"
+    tools:context=".MapActivity">
+
+    <!-- Top App Bar & Status Badge -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/spacing_m"
+        android:paddingEnd="@dimen/spacing_m"
+        android:paddingTop="@dimen/spacing_m"
+        android:paddingBottom="@dimen/spacing_s"
+        android:background="@color/surface">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Relief &amp; Tracking Map"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_size_headline"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Real-Time Disaster Zone GPS Telemetry"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_size_caption" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvTrackingBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/badge_online"
+            android:text="@string/tracking_browsing"
+            android:textColor="@color/status_online"
+            android:textSize="@dimen/text_size_caption"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Map View Fragment -->
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Elevated Standard Bottom Navigation Bar -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_nav_height"
+        app:cardElevation="8dp"
+        app:cardCornerRadius="0dp"
+        app:strokeWidth="0dp"
+        app:cardBackgroundColor="@color/surface">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Home -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/ivHomeIcon"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bottom_nav_item_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/nav_home"
+                    android:padding="@dimen/spacing_s"
+                    app:srcCompat="@drawable/home_icon"
+                    app:tint="@color/secondary" />
+            </FrameLayout>
+
+            <!-- Chat -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/ivChatIcon"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bottom_nav_item_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/nav_chat"
+                    android:padding="@dimen/spacing_s"
+                    app:srcCompat="@drawable/chat_icon"
+                    app:tint="@color/secondary" />
+            </FrameLayout>
+
+            <!-- Notification -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/ivNotificationIcon"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bottom_nav_item_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/nav_notifications"
+                    android:padding="@dimen/spacing_s"
+                    app:srcCompat="@drawable/notification_icon"
+                    app:tint="@color/secondary" />
+            </FrameLayout>
+
+            <!-- Profile -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/ivProfileIcon"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bottom_nav_item_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/nav_profile"
+                    android:padding="@dimen/spacing_s"
+                    app:srcCompat="@drawable/profile_icon"
+                    app:tint="@color/secondary" />
+            </FrameLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

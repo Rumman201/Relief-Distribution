@@ -153,7 +153,7 @@ public class NotificationsActivity extends AppCompatActivity {
                 tvTitle = itemView.findViewById(R.id.tvNotificationTitle);
                 tvMessage = itemView.findViewById(R.id.tvNotificationMessage);
                 tvTime = itemView.findViewById(R.id.tvNotificationTime);
-                unreadIndicator = itemView.findViewById(R.id.unreadIndicator);
+                unreadIndicator = itemView.findViewById(R.id.vUnreadIndicator);
             }
 
             void bind(Notification notification) {

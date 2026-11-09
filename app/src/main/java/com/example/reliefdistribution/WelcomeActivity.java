@@ -1,52 +1,40 @@
 package com.example.reliefdistribution;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.view.animation.AnimationUtils;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.Firebase;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.example.reliefdistribution.databinding.ActivityWelcomeBinding;
 
+/**
+ * WelcomeActivity welcomes new or returning users and provides routes to Login and Registration.
+ * Upgraded in Phase 4 with Material 3 styling and entrance choreography.
+ */
 public class WelcomeActivity extends AppCompatActivity {
 
-    Button btLogin, btRegister;
-    FirebaseAuth mAuth;
+    private ActivityWelcomeBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_welcome);
+        binding = ActivityWelcomeBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        btLogin = findViewById(R.id.btLogin);
-        btRegister = findViewById(R.id.btRegister);
+        // Apply smooth entrance animations
+        binding.cardWelcomeIcon.startAnimation(AnimationUtils.loadAnimation(this, R.anim.scale_up));
+        binding.btLogin.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom));
+        binding.btRegister.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom));
 
-        mAuth = FirebaseAuth.getInstance();
-
-        btLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(WelcomeActivity.this, LoginActivity.class));
-                finish();
-            }
+        binding.btLogin.setOnClickListener(v -> {
+            startActivity(new Intent(WelcomeActivity.this, LoginActivity.class));
+            finish();
         });
 
-        btRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(WelcomeActivity.this, SignUpActivity.class));
-                finish();
-            }
+        binding.btRegister.setOnClickListener(v -> {
+            startActivity(new Intent(WelcomeActivity.this, SignUpActivity.class));
+            finish();
         });
     }
-
 }

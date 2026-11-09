@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Chip;
-import android.widget.ChipGroup;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -76,11 +76,12 @@ public class InventoryManagementActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
         chipGroupCategories = findViewById(R.id.chipGroupCategories);
         tvTotalItems = findViewById(R.id.tvTotalItems);
-        tvLowStock = findViewById(R.id.tvLowStock);
-        tvOutOfStock = findViewById(R.id.tvOutOfStock);
+        tvLowStock = findViewById(R.id.tvLowStockItems);
+        tvOutOfStock = findViewById(R.id.tvOutOfStockItems);
     }
 
     private void setupCategoryChips() {
+        chipGroupCategories.removeAllViews();
         for (String category : categories) {
             Chip chip = new Chip(this);
             chip.setText(category);
@@ -237,13 +238,13 @@ public class InventoryManagementActivity extends AppCompatActivity {
                 super(itemView);
                 tvItemName = itemView.findViewById(R.id.tvItemName);
                 tvCategory = itemView.findViewById(R.id.tvCategory);
-                tvQuantityAvailable = itemView.findViewById(R.id.tvQuantityAvailable);
-                tvQuantityReserved = itemView.findViewById(R.id.tvQuantityReserved);
+                tvQuantityAvailable = itemView.findViewById(R.id.tvAvailableQty);
+                tvQuantityReserved = itemView.findViewById(R.id.tvReservedQty);
                 tvUnit = itemView.findViewById(R.id.tvUnit);
                 tvLocation = itemView.findViewById(R.id.tvLocation);
-                tvExpiry = itemView.findViewById(R.id.tvExpiry);
-                tvStatus = itemView.findViewById(R.id.tvStatus);
-                statusBadge = itemView.findViewById(R.id.statusBadge);
+                tvExpiry = itemView.findViewById(R.id.tvExpiryDate);
+                tvStatus = itemView.findViewById(R.id.tvStockStatus);
+                statusBadge = itemView.findViewById(R.id.tvStockStatus);
             }
 
             void bind(InventoryItem item) {

@@ -1,6 +1,7 @@
 package com.example.reliefdistribution;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.reliefdistribution.data.ai.ReliefTriageAdvisor;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -253,10 +255,22 @@ public class ManageRequestsActivity extends AppCompatActivity {
                 btnViewMap = itemView.findViewById(R.id.btnViewMap);
             }
 
+            private final ReliefTriageAdvisor triageAdvisor = new ReliefTriageAdvisor();
+
             void bind(ReliefRequest request) {
                 tvItemName.setText(request.getItemName());
                 tvQuantity.setText(String.format(Locale.getDefault(), "Qty: %d %s", request.getQuantity(), request.getUnit()));
-                tvPriority.setText("Priority: " + request.getPriority());
+                
+                // Production AI Triage Evaluation
+                ReliefTriageAdvisor.TriageAssessment assessment = triageAdvisor.evaluate(
+                        request.getCategory(),
+                        request.getItemName(),
+                        request.getQuantity(),
+                        request.getNotes(),
+                        request.getTimestamp()
+                );
+                tvPriority.setText(String.format(Locale.getDefault(), "Priority: %s (AI Score: %d)", 
+                        assessment.getPriorityTier(), assessment.getUrgencyScore()));
                 tvDate.setText("Requested: " + dateFormat.format(new Date(request.getTimestamp())));
 
                 String status = request.getStatus();
@@ -347,7 +361,19 @@ public class ManageRequestsActivity extends AppCompatActivity {
 
             private void viewOnMap(ReliefRequest request) {
                 if (request.getLatitude() != 0 && request.getLongitude() != 0) {
-                    Intent intent = new Intent(itemView.getContext(), GoogleMap.class);
+                    try {
+                        Uri gmmIntentUri = Uri.parse("geo:" + request.getLatitude() + "," + request.getLongitude() +
+                                "?q=" + request.getLatitude() + "," + request.getLongitude() +
+                                "(" + Uri.encode(request.getItemName() != null ? request.getItemName() : "Relief Aid Target") + ")");
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                        mapIntent.setPackage("com.google.android.apps.maps");
+                        if (mapIntent.resolveActivity(itemView.getContext().getPackageManager()) != null) {
+                            itemView.getContext().startActivity(mapIntent);
+                            return;
+                        }
+                    } catch (Exception ignored) {
+                    }
+                    Intent intent = new Intent(itemView.getContext(), MapActivity.class);
                     intent.putExtra("LATITUDE", request.getLatitude());
                     intent.putExtra("LONGITUDE", request.getLongitude());
                     intent.putExtra("ADDRESS", request.getLocationAddress());

@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older that API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Relief Distribution System - Backup Security Rules (Android 11 and below)
+   Prevents unauthorized extraction of cached credentials, user identifiers,
+   and local session data via ADB or auto-backup.
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <!-- Exclude all shared preferences containing session or user identity data -->
+    <exclude domain="sharedpref" path="." />
+    <!-- Exclude local cache directories -->
+    <exclude domain="root" path="databases" />
+    <exclude domain="file" path="." />
 </full-backup-content>

@@ -5,45 +5,63 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+    android:background="@color/background"
     android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="100dp">
+        android:paddingBottom="48dp">
 
-        <!-- Header -->
+        <!-- Header Bar with Back Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_back"
+                android:contentDescription="Go Back"
+                app:tint="@color/text_primary" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Request Relief Supplies"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:gravity="center"
-            android:text="Request Relief Supplies"
-            android:textColor="@color/black"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:gravity="center"
-            android:text="Fill in the details below to request relief supplies"
-            android:textColor="@color/dark_gray"
+            android:text="Fill in the details below to request emergency relief supplies from nearest distributors"
+            android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
         <!-- Item Category Spinner -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilCategory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Item Category"
-            app:boxBackgroundMode="outlined"
+            app:boxBackgroundMode="outline"
             app:endIconMode="dropdown_menu">
 
             <AutoCompleteTextView
-                android:id="@+id/actvItemCategory"
+                android:id="@+id/actvCategory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none" />
@@ -51,11 +69,12 @@
 
         <!-- Item Name -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilItemName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Item Name (e.g., Rice, Water Bottles, Medicine)"
-            app:boxBackgroundMode="outlined">
+            app:boxBackgroundMode="outline">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etItemName"
@@ -66,11 +85,12 @@
 
         <!-- Quantity -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilQuantity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Quantity"
-            app:boxBackgroundMode="outlined">
+            app:boxBackgroundMode="outline">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etQuantity"
@@ -82,11 +102,12 @@
 
         <!-- Unit -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilUnit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Unit (e.g., kg, pieces, liters, boxes)"
-            app:boxBackgroundMode="outlined">
+            app:boxBackgroundMode="outline">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etUnit"
@@ -97,11 +118,12 @@
 
         <!-- Priority Spinner -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPriority"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Priority Level"
-            app:boxBackgroundMode="outlined"
+            app:boxBackgroundMode="outline"
             app:endIconMode="dropdown_menu">
 
             <AutoCompleteTextView
@@ -113,14 +135,15 @@
 
         <!-- Location Address -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Your Address / Location"
-            app:boxBackgroundMode="outlined">
+            app:boxBackgroundMode="outline">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etAddress"
+                android:id="@+id/etLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPostalAddress"
@@ -129,12 +152,12 @@
 
         <!-- Get Current Location Button -->
         <Button
-            android:id="@+id/btnGetLocation"
+            android:id="@+id/btnSelectLocation"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="@color/design_default_color_primary"
-            android:text="Use Current Location"
+            android:layout_height="50dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="@color/secondary"
+            android:text="Choose Location on Map"
             android:textColor="@color/white" />
 
         <!-- Location Display -->
@@ -145,16 +168,17 @@
             android:layout_marginBottom="16dp"
             android:gravity="center"
             android:text="Location not set"
-            android:textColor="@color/dark_gray"
+            android:textColor="@color/text_secondary"
             android:textSize="12sp" />
 
         <!-- Notes -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilNotes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:hint="Additional Notes (optional)"
-            app:boxBackgroundMode="outlined">
+            app:boxBackgroundMode="outline">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etNotes"
@@ -166,11 +190,11 @@
 
         <!-- Submit Button -->
         <Button
-            android:id="@+id/btnSubmitRequest"
+            android:id="@+id/btnSubmit"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:backgroundTint="@color/design_default_color_primary"
-            android:text="Submit Request"
+            android:layout_height="54dp"
+            android:backgroundTint="@color/primary"
+            android:text="Submit Relief Request"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />

@@ -4,43 +4,38 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.AdapterView;
+import android.util.Patterns;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.example.reliefdistribution.data.model.Resource;
+import com.example.reliefdistribution.databinding.ActivitySignUpBinding;
+import com.example.reliefdistribution.ui.auth.AuthViewModel;
 
+/**
+ * SignUpActivity coordinates user registration, field validation, and profile provisioning.
+ * Upgraded in Phase 4 with Material 3 styling, floating labels, and entrance motion.
+ */
 public class SignUpActivity extends AppCompatActivity {
-    private Spinner spinner;
-    EditText etFName, etLName, etEmail, etPhoneNumber, etPassword, etConfirmPassword;
-    Button btSignUp;
 
-    private FirebaseAuth firebaseAuth;
+    private ActivitySignUpBinding binding;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_up);
+        binding = ActivitySignUpBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        firebaseAuth = FirebaseAuth.getInstance();
+        // Apply smooth entrance motion
+        binding.cardSignUpForm.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in));
+        binding.btSignUp.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom));
 
-        spinner = findViewById(R.id.dropdown_menu);
-        etFName = findViewById(R.id.etFName);
-        etLName = findViewById(R.id.etLName);
-        etEmail = findViewById(R.id.etEmail);
-        etPhoneNumber = findViewById(R.id.etPhoneNumber);
-        etPassword = findViewById(R.id.etPassword);
-        etConfirmPassword = findViewById(R.id.etConfirmPassword);
-        btSignUp = findViewById(R.id.btSignUp);
-
-        String[] items = {"Distributor", "Survivor"};
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
@@ -48,32 +43,32 @@ public class SignUpActivity extends AppCompatActivity {
                 android.R.layout.simple_spinner_item
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
+        binding.dropdownMenu.setAdapter(adapter);
 
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, android.view.View view, int position, long id) {
-                String selectedItem = parent.getItemAtPosition(position).toString();
-                Toast.makeText(SignUpActivity.this, "Selected: " + selectedItem, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-        btSignUp.setOnClickListener(v -> {
-            String fName = etFName.getText().toString().trim();
-            String lName = etLName.getText().toString().trim();
-            String email = etEmail.getText().toString().trim();
-            String phone = etPhoneNumber.getText().toString().trim();
-            String password = etPassword.getText().toString();
-            String confirmPassword = etConfirmPassword.getText().toString();
-            String selectedRole = spinner.getSelectedItem().toString();
+        binding.btSignUp.setOnClickListener(v -> {
+            String fName = binding.etFName.getText() != null ? binding.etFName.getText().toString().trim() : "";
+            String lName = binding.etLName.getText() != null ? binding.etLName.getText().toString().trim() : "";
+            String email = binding.etEmail.getText() != null ? binding.etEmail.getText().toString().trim() : "";
+            String phone = binding.etPhoneNumber.getText() != null ? binding.etPhoneNumber.getText().toString().trim() : "";
+            String password = binding.etPassword.getText() != null ? binding.etPassword.getText().toString() : "";
+            String confirmPassword = binding.etConfirmPassword.getText() != null ? binding.etConfirmPassword.getText().toString() : "";
+            String selectedRole = binding.dropdownMenu.getSelectedItem() != null
+                    ? binding.dropdownMenu.getSelectedItem().toString()
+                    : "Survivor";
 
             if (TextUtils.isEmpty(fName) || TextUtils.isEmpty(lName) || TextUtils.isEmpty(email)
                     || TextUtils.isEmpty(phone) || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (password.length() < 6) {
+                Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -82,54 +77,54 @@ public class SignUpActivity extends AppCompatActivity {
                 return;
             }
 
-             registerUser(fName, lName, email, phone, selectedRole, password);
+            authViewModel.register(fName, lName, email, phone, selectedRole, password);
+        });
+
+        authViewModel.getRegisterState().observe(this, resource -> {
+            if (resource == null) return;
+
+            switch (resource.getStatus()) {
+                case LOADING:
+                    binding.btSignUp.setEnabled(false);
+                    break;
+
+                case SUCCESS:
+                    binding.btSignUp.setEnabled(true);
+                    User user = resource.getData();
+                    if (user != null) {
+                        saveUserData(user);
+                        Toast.makeText(this, "User Registered Successfully", Toast.LENGTH_SHORT).show();
+
+                        Intent intent;
+                        if ("Distributor".equals(user.getRole())) {
+                            intent = new Intent(SignUpActivity.this, DistributorDashboard.class);
+                        } else {
+                            intent = new Intent(SignUpActivity.this, SurvivorDashboard.class);
+                        }
+                        startActivity(intent);
+                        finish();
+                    }
+                    break;
+
+                case ERROR:
+                    binding.btSignUp.setEnabled(true);
+                    String message = resource.getMessage() != null ? resource.getMessage() : "Registration failed";
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                    break;
+            }
         });
     }
 
-    private void registerUser(String fName, String lName, String email, String phone, String role, String password) {
-        firebaseAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                         saveUserToDatabase(fName, lName, email, phone, role, password);
-                    } else {
-                         Toast.makeText(SignUpActivity.this, "Registration Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void saveUserToDatabase(String fName, String lName, String email, String phone, String role, String password) {
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference("Users");
-        String userId = firebaseAuth.getCurrentUser().getUid();
-
-        User user = new User(userId, fName, lName, email, phone, role, password); // Don't store plain passwords
-        database.child(userId).setValue(user)
-                .addOnSuccessListener(aVoid -> {
-                     SharedPreferences preferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putBoolean("isRegistered", true);
-                    editor.putString("registeredFName", fName);
-                    editor.putString("registeredLName", lName);
-                    editor.putString("registeredEmail", email);
-                    editor.putString("registeredPhone", phone);
-                    editor.putString("registeredRole", role);
-                    editor.putString("registeredPassword", password);
-                    editor.putString("registeredUserId", userId);
-                    editor.apply();
-
-                    Toast.makeText(this, "User Registered Successfully", Toast.LENGTH_SHORT).show();
-
-                     if (role.equals("Distributor")) {
-                        Intent intent = new Intent(SignUpActivity.this, DistributorDashboard.class);
-                        startActivity(intent);
-                        finish();
-                    } else if (role.equals("Survivor")) {
-                        Intent intent = new Intent(SignUpActivity.this, SurvivorDashboard.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to Save User: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+    private void saveUserData(User user) {
+        SharedPreferences preferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("isRegistered", true);
+        editor.putString("registeredFName", user.getFirstName());
+        editor.putString("registeredLName", user.getLastName());
+        editor.putString("registeredEmail", user.getEmail());
+        editor.putString("registeredPhone", user.getPhone());
+        editor.putString("registeredRole", user.getRole());
+        editor.putString("registeredUserId", user.getUserId());
+        editor.apply();
     }
 }

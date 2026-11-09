@@ -1,19 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Relief Distribution System - Data Extraction Rules (Android 12+, API 31+)
+   Enforces zero-trust storage isolation: Excludes session identifiers,
+   auth tokens, and local cached data from cloud backups and device-to-device transfers.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <!-- Exclude all shared preferences to prevent cloud extraction of user sessions -->
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="root" path="databases" />
+        <exclude domain="file" path="." />
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <!-- Exclude shared preferences and cached databases during device migration -->
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="root" path="databases" />
+        <exclude domain="file" path="." />
     </device-transfer>
-    -->
 </data-extraction-rules>

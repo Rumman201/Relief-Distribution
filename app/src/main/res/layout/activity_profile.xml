@@ -1,42 +1,213 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".Profile"
-    android:background="#CFDBE3">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="  Profile"
-        android:gravity="left|center"
-        android:textStyle="bold"
-        android:textSize="30sp"
-        android:textColor="@color/black"
-        android:background="#66C1B9"/>
+    android:fillViewport="true"
+    android:background="@color/background"
+    tools:context=".Profile">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="615dp"
-        android:layout_margin="10dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_m">
+
+        <!-- Top Header Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_m">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="User Profile"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_size_headline"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Account identity and emergency credentials"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_size_caption" />
+        </LinearLayout>
+
+        <!-- Identity & Avatar Hero Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardIdentity"
+            style="@style/Widget.Relief.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_m">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:padding="@dimen/spacing_l">
+
+                <!-- Avatar Circle with Initials -->
+                <FrameLayout
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:background="@drawable/circle_avatar">
+
+                    <TextView
+                        android:id="@+id/tvAvatarInitials"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="RD"
+                        android:textColor="@color/primary"
+                        android:textSize="26sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <!-- Full Name -->
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_m"
+                    android:text="Relief User"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_size_headline"
+                    android:textStyle="bold" />
+
+                <!-- Role Badge -->
+                <TextView
+                    android:id="@+id/tvUserRole"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:background="@drawable/badge_role"
+                    android:text="Survivor"
+                    android:textColor="@color/primary"
+                    android:textSize="@dimen/text_size_caption"
+                    android:textStyle="bold" />
+
+                <!-- Email -->
+                <TextView
+                    android:id="@+id/tvUserEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_s"
+                    android:text="user@relief.org"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_size_body" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Profile Details Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardDetails"
+            style="@style/Widget.Relief.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_m">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_m">
+
+                <!-- Phone Detail -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="@dimen/spacing_m">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Phone Number"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="@dimen/text_size_caption"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvUserPhone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Not Provided"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_body" />
+                </LinearLayout>
+
+                <!-- User ID Detail -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="@dimen/spacing_m">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Account ID"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="@dimen/text_size_caption"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvUserId"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Firebase UID"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_caption" />
+                </LinearLayout>
+
+                <!-- Session Status -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Security Status"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="@dimen/text_size_caption"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvUserStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Authenticated (Encrypted Session)"
+                        android:textColor="@color/status_online"
+                        android:textSize="@dimen/text_size_caption"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Logout Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
+            style="@style/Widget.Relief.Button.Emergency"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginBottom="@dimen/spacing_l"
+            android:text="Log Out"
+            android:textSize="@dimen/text_size_title" />
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="Log out"
-        android:textColor="@color/white"
-        android:textSize="26dp"
-        android:textStyle="bold"
-        android:backgroundTint="#3AA49A"
-        android:gravity="center"
-        android:layout_marginBottom="5dp"/>
-
-</LinearLayout>
+</ScrollView>

@@ -1,21 +1,56 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ==============================================================================
+# Relief Distribution System — Production ProGuard / R8 Hardening Rules
+# ==============================================================================
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# --- Line Number and Source Attribution for Crash Diagnostics ---
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# --- Firebase Realtime Database and Auth Data Models ---
+# Preserve all data model classes, constructors, and bean accessors required
+# for Firebase reflection-based deserialization (snapshot.getValue(Class)).
+-keep class com.example.reliefdistribution.data.model.** { *; }
+-keep class com.example.reliefdistribution.User { *; }
+-keep class com.example.reliefdistribution.ReliefRequest { *; }
+-keep class com.example.reliefdistribution.InventoryItem { *; }
+-keep class com.example.reliefdistribution.Notification { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute
+-keepclassmembers class * {
+    @com.google.firebase.database.IgnoreExtraProperties <fields>;
+    @com.google.firebase.database.Exclude <methods>;
+    @com.google.firebase.database.PropertyName <fields>;
+    @com.google.firebase.database.PropertyName <methods>;
+}
+
+# --- Android Jetpack Architecture & ViewModels ---
+-keepclassmembers public class * extends androidx.lifecycle.ViewModel {
+    public <init>(...);
+}
+-keep class * extends androidx.lifecycle.ViewModel
+
+# --- ViewBinding Reflection Protection ---
+-keep class * implements androidx.viewbinding.ViewBinding {
+    public static *** inflate(...);
+    public static *** bind(...);
+}
+
+# --- Google Play Services & Maps ---
+-keep class com.google.android.gms.maps.** { *; }
+-keep interface com.google.android.gms.maps.** { *; }
+-keep class com.google.android.gms.location.** { *; }
+
+# --- Security Hardening: Strip Sensitive Logging in Production ---
+# Strips Android logging calls from compiled release binaries to prevent PII leakage.
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+}
+
+-assumenosideeffects class java.io.PrintStream {
+    public void println(...);
+    public void print(...);
+}

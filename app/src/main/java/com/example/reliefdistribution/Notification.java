@@ -1,10 +1,12 @@
 package com.example.reliefdistribution;
 
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@IgnoreExtraProperties
 public class Notification {
     public static final String TYPE_REQUEST_CREATED = "request_created";
     public static final String TYPE_REQUEST_ACCEPTED = "request_accepted";
@@ -23,10 +25,10 @@ public class Notification {
     private String relatedItemId;
     private long timestamp;
     private boolean isRead;
-    private Map<String, String> data; // Additional data payload
+    private Map<String, Object> data; // Additional data payload
 
     public Notification() {
-        // Default constructor required for Firebase
+        this.data = new HashMap<>();
     }
 
     public Notification(String userId, String title, String message, String type) {
@@ -119,15 +121,19 @@ public class Notification {
         isRead = read;
     }
 
-    public Map<String, String> getData() {
+    public Map<String, Object> getData() {
         return data;
     }
 
-    public void setData(Map<String, String> data) {
-        this.data = data;
+    public void setData(Map<String, ?> data) {
+        if (data != null) {
+            this.data = new HashMap<>(data);
+        } else {
+            this.data = new HashMap<>();
+        }
     }
 
-    public void addData(String key, String value) {
+    public void addData(String key, Object value) {
         if (this.data == null) {
             this.data = new HashMap<>();
         }
@@ -160,10 +166,14 @@ public class Notification {
         notification.setType((String) map.get("type"));
         notification.setRelatedRequestId((String) map.get("relatedRequestId"));
         notification.setRelatedItemId((String) map.get("relatedItemId"));
-        notification.setTimestamp(((Number) map.get("timestamp")).longValue());
-        notification.setRead((Boolean) map.get("isRead"));
+        if (map.get("timestamp") != null) {
+            notification.setTimestamp(((Number) map.get("timestamp")).longValue());
+        }
+        if (map.get("isRead") != null) {
+            notification.setRead((Boolean) map.get("isRead"));
+        }
         @SuppressWarnings("unchecked")
-        Map<String, String> data = (Map<String, String>) map.get("data");
+        Map<String, Object> data = (Map<String, Object>) map.get("data");
         notification.setData(data);
         return notification;
     }

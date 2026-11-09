@@ -1,10 +1,12 @@
 package com.example.reliefdistribution;
 
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@IgnoreExtraProperties
 public class InventoryItem {
     public static final String CATEGORY_FOOD = "food";
     public static final String CATEGORY_WATER = "water";
@@ -14,6 +16,10 @@ public class InventoryItem {
     public static final String CATEGORY_HYGIENE = "hygiene";
     public static final String CATEGORY_OTHER = "other";
 
+    public static final String STATUS_IN_STOCK = "in_stock";
+    public static final String STATUS_LOW_STOCK = "low_stock";
+    public static final String STATUS_OUT_OF_STOCK = "out_of_stock";
+
     private String itemId;
     private String distributorId;
     private String itemName;
@@ -22,6 +28,9 @@ public class InventoryItem {
     private int quantityReserved;
     private String unit; // e.g., "pieces", "kg", "liters", "boxes"
     private String description;
+    private String location;
+    private long expiryDate;
+    private int threshold = 10;
     private long lastUpdated;
     private boolean isActive;
 
@@ -38,6 +47,8 @@ public class InventoryItem {
         this.quantityReserved = 0;
         this.unit = unit;
         this.description = description;
+        this.location = "Central Depot";
+        this.threshold = 10;
         this.lastUpdated = System.currentTimeMillis();
         this.isActive = true;
     }
@@ -113,6 +124,30 @@ public class InventoryItem {
         this.description = description;
     }
 
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public long getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(long expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public int getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(int threshold) {
+        this.threshold = threshold;
+    }
+
     public long getLastUpdated() {
         return lastUpdated;
     }
@@ -129,6 +164,16 @@ public class InventoryItem {
         isActive = active;
     }
 
+    public String getStatus() {
+        if (quantityAvailable <= 0) {
+            return STATUS_OUT_OF_STOCK;
+        } else if (quantityAvailable <= threshold) {
+            return STATUS_LOW_STOCK;
+        } else {
+            return STATUS_IN_STOCK;
+        }
+    }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -140,6 +185,9 @@ public class InventoryItem {
         result.put("quantityReserved", quantityReserved);
         result.put("unit", unit);
         result.put("description", description);
+        result.put("location", location);
+        result.put("expiryDate", expiryDate);
+        result.put("threshold", threshold);
         result.put("lastUpdated", lastUpdated);
         result.put("isActive", isActive);
         return result;
@@ -152,12 +200,27 @@ public class InventoryItem {
         item.setDistributorId((String) map.get("distributorId"));
         item.setItemName((String) map.get("itemName"));
         item.setCategory((String) map.get("category"));
-        item.setQuantityAvailable(((Number) map.get("quantityAvailable")).intValue());
-        item.setQuantityReserved(((Number) map.get("quantityReserved")).intValue());
+        if (map.get("quantityAvailable") != null) {
+            item.setQuantityAvailable(((Number) map.get("quantityAvailable")).intValue());
+        }
+        if (map.get("quantityReserved") != null) {
+            item.setQuantityReserved(((Number) map.get("quantityReserved")).intValue());
+        }
         item.setUnit((String) map.get("unit"));
         item.setDescription((String) map.get("description"));
-        item.setLastUpdated(((Number) map.get("lastUpdated")).longValue());
-        item.setActive((Boolean) map.get("isActive"));
+        item.setLocation((String) map.get("location"));
+        if (map.get("expiryDate") != null) {
+            item.setExpiryDate(((Number) map.get("expiryDate")).longValue());
+        }
+        if (map.get("threshold") != null) {
+            item.setThreshold(((Number) map.get("threshold")).intValue());
+        }
+        if (map.get("lastUpdated") != null) {
+            item.setLastUpdated(((Number) map.get("lastUpdated")).longValue());
+        }
+        if (map.get("isActive") != null) {
+            item.setActive((Boolean) map.get("isActive"));
+        }
         return item;
     }
 }

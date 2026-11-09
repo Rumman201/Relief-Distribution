@@ -1,10 +1,97 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Base.Theme.ReliefDistribution" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/black</item>
-        <item name="colorPrimaryVariant">@color/black</item>
-        <item name="colorOnPrimary">@color/black</item>
+        <!-- Brand Colors -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
+
+        <!-- Secondary Accent -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+
+        <!-- Surface and Background -->
+        <item name="android:windowBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
+
+        <!-- Status & Emergency -->
+        <item name="colorError">@color/emergency_red</item>
+        <item name="colorOnError">@color/on_emergency</item>
+
+        <!-- System Bars -->
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+
+        <!-- Default Component Styling -->
+        <item name="materialCardViewStyle">@style/Widget.Relief.CardView</item>
+        <item name="materialButtonStyle">@style/Widget.Relief.Button.Primary</item>
     </style>
 
     <style name="Theme.ReliefDistribution" parent="Base.Theme.ReliefDistribution" />
+
+    <style name="Theme.ReliefDistribution.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+    <style name="Theme.ReliefDistribution.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
+
+    <!-- Custom Reusable Widget Styles -->
+    <style name="Widget.Relief.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+        <item name="cardElevation">4dp</item>
+        <item name="cardBackgroundColor">@color/card_surface</item>
+        <item name="strokeColor">@color/card_stroke</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="Widget.Relief.CardView.Clickable" parent="Widget.Relief.CardView">
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+    </style>
+
+    <style name="Widget.Relief.CardView.Emergency" parent="Widget.Relief.CardView.Clickable">
+        <item name="cardBackgroundColor">#FFF8F8</item>
+        <item name="strokeColor">@color/emergency_red</item>
+        <item name="strokeWidth">1.5dp</item>
+    </style>
+
+    <style name="Widget.Relief.Button.Primary" parent="Widget.Material3.Button">
+        <item name="cornerRadius">@dimen/button_corner_radius</item>
+        <item name="backgroundTint">@color/primary</item>
+        <item name="android:textColor">@color/on_primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <style name="Widget.Relief.Button.Emergency" parent="Widget.Material3.Button">
+        <item name="cornerRadius">@dimen/button_corner_radius</item>
+        <item name="backgroundTint">@color/emergency_red</item>
+        <item name="android:textColor">@color/on_emergency</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+    </style>
+
+    <style name="Widget.Relief.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">@dimen/button_corner_radius</item>
+        <item name="strokeColor">@color/primary</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+    </style>
+
+    <style name="Widget.Relief.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/card_corner_radius_small</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/card_corner_radius_small</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/card_corner_radius_small</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/card_corner_radius_small</item>
+        <item name="boxStrokeColor">@color/primary</item>
+        <item name="hintTextColor">@color/primary</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_s</item>
+    </style>
+
 </resources>

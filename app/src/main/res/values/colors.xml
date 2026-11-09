@@ -1,6 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Legacy Compatibility Tokens -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#CFDBE3</color>
+    <color name="colorPrimary">#006A60</color>
+    <color name="dark_gray">#4A5553</color>
+    <color name="light_gray">#EAEFED</color>
+    <color name="material_blue_grey_50">#ECEFF1</color>
+    <color name="design_default_color_primary">#006A60</color>
+    <color name="design_default_color_secondary">#4A635F</color>
+    <color name="design_default_color_error">#D32F2F</color>
+    <color name="background_light">#F4F7F6</color>
+    <color name="text_hint">#707E7B</color>
+
+    <!-- Semantic Material 3 Brand Tokens for Disaster Relief -->
+    <color name="primary">#006A60</color>
+    <color name="primary_variant">#004D40</color>
+    <color name="primary_light">#70F7E5</color>
+    <color name="primary_container">#CCE8E3</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_primary_container">#00201D</color>
+
+    <!-- Secondary & Supporting Accents -->
+    <color name="secondary">#4A635F</color>
+    <color name="secondary_container">#CCE8E3</color>
+    <color name="on_secondary">#FFFFFF</color>
+
+    <!-- Surface & Background System -->
+    <color name="background">#F4F7F6</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#EAEFED</color>
+    <color name="on_surface">#191C1C</color>
+    <color name="on_surface_variant">#3F4947</color>
+    <color name="border_subtle">#D0DCD9</color>
+
+    <!-- Typography Hierarchy -->
+    <color name="text_primary">#191C1C</color>
+    <color name="text_secondary">#4A5553</color>
+    <color name="text_tertiary">#707E7B</color>
+
+    <!-- Crisis & Status Semantics -->
+    <color name="emergency_red">#D32F2F</color>
+    <color name="emergency_red_container">#FFDAD6</color>
+    <color name="on_emergency">#FFFFFF</color>
+
+    <color name="status_online">#2E7D32</color>
+    <color name="status_online_container">#C8E6C9</color>
+    <color name="status_offline">#E65100</color>
+    <color name="status_offline_container">#FFE0B2</color>
+
+    <!-- Card & Overlay Scrims -->
+    <color name="card_surface">#FFFFFF</color>
+    <color name="card_stroke">#E0EAE7</color>
+    <color name="scrim_dark">#99000000</color>
+    <color name="ripple_light">#1F006A60</color>
 </resources>

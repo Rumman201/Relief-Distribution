@@ -5,68 +5,274 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/background"
     tools:context=".Informations">
 
-    <TextView
+    <!-- Scrollable Content -->
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:text="  Informations"
-        android:textStyle="bold"
-        android:textSize="30dp"
-        android:gravity="center|left"
-        android:background="@color/gray"
-        android:layout_marginBottom="20dp"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/tvInformations"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_m">
+
+            <!-- Top Header Bar -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:layout_marginBottom="@dimen/spacing_m">
+
+                <TextView
+                    android:id="@+id/tvInformations"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Disaster Preparedness &amp; Safety"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_size_headline"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Official emergency protocols and life-saving instructions"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_size_caption" />
+            </LinearLayout>
+
+            <!-- Guide 1: Cyclone & Severe Storms -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Relief.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_m">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌪️ Cyclone &amp; Storm Surge Protocol"
+                        android:textColor="@color/primary"
+                        android:textSize="@dimen/text_size_title"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="• Evacuate immediately to designated concrete cyclone shelters when Signal 8+ is announced.\n• Secure loose outdoor equipment and move livestock to high ground.\n• Keep battery-powered radios tuned to meteorological broadcasts.\n• Avoid coastal embankments and sea walls during tidal surge warnings."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_body"
+                        android:lineSpacingExtra="3dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Guide 2: Flood & Water Safety -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Relief.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_m">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌊 Flash Flood &amp; Water Safety"
+                        android:textColor="@color/primary"
+                        android:textSize="@dimen/text_size_title"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="• Move valuables and family members to upper floors or high ground.\n• Never walk or drive through flowing water (15 cm of moving water can sweep an adult away).\n• Disconnect household electrical mains before water enters the premises.\n• Disinfect all drinking water using halogen tablets or boiling for 5 minutes."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_body"
+                        android:lineSpacingExtra="3dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Guide 3: Earthquake Guide -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Relief.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_m">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⚡ Earthquake Survival Guide"
+                        android:textColor="@color/primary"
+                        android:textSize="@dimen/text_size_title"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="• DROP, COVER, and HOLD ON under a sturdy table or desk.\n• Stay away from glass windows, exterior walls, and heavy hanging light fixtures.\n• Do NOT use elevators during or immediately after ground shaking.\n• Check for gas leaks and structural cracks before re-entering buildings."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_body"
+                        android:lineSpacingExtra="3dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Guide 4: Emergency Triage & First Aid -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Relief.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_m">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🩹 First Aid &amp; Emergency Triage"
+                        android:textColor="@color/primary"
+                        android:textSize="@dimen/text_size_title"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="• Apply direct, continuous pressure to wounds with clean cloth to arrest bleeding.\n• Keep injured persons warm and calm to counteract circulatory shock.\n• Immobilize suspected bone fractures before moving patients.\n• Dial 999 immediately for professional paramedic and rescue response."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_body"
+                        android:lineSpacingExtra="3dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Elevated Standard Bottom Navigation Bar -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
-        android:layout_height="677dp"
-        android:layout_weight="1" />
-
-    <androidx.cardview.widget.CardView
-    android:layout_width="match_parent"
-    android:layout_height="80dp"
-    android:layout_marginTop="30dp"
-    android:layout_marginBottom="10dp"
-    android:elevation="20dp"
-    app:cardCornerRadius="30dp">
+        android:layout_height="@dimen/bottom_nav_height"
+        app:cardElevation="8dp"
+        app:cardCornerRadius="0dp"
+        app:strokeWidth="0dp"
+        app:cardBackgroundColor="@color/surface">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="10dp"
             android:orientation="horizontal"
-            android:layout_gravity="center">
+            android:gravity="center_vertical">
 
-            <ImageView
-                android:id="@+id/ivHomeIcon"
-                android:layout_width="70dp"
+            <!-- Home -->
+            <FrameLayout
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="20dp"
-                app:srcCompat="@drawable/home_icon"
-                android:layout_weight="1"/>
-            <ImageView
-                android:id="@+id/ivChatIcon"
-                android:layout_width="70dp"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/ivHomeIcon"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bottom_nav_item_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/nav_home"
+                    android:padding="@dimen/spacing_s"
+                    app:srcCompat="@drawable/home_icon"
+                    app:tint="@color/secondary" />
+            </FrameLayout>
+
+            <!-- Chat -->
+            <FrameLayout
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="20dp"
-                app:srcCompat="@drawable/chat_icon"
-                android:layout_weight="1"/>
-            <ImageView
-                android:id="@+id/ivNotificationIcon"
-                android:layout_width="70dp"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/ivChatIcon"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bottom_nav_item_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/nav_chat"
+                    android:padding="@dimen/spacing_s"
+                    app:srcCompat="@drawable/chat_icon"
+                    app:tint="@color/secondary" />
+            </FrameLayout>
+
+            <!-- Notification -->
+            <FrameLayout
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="20dp"
-                app:srcCompat="@drawable/notification_icon"
-                android:layout_weight="1"/>
-            <ImageView
-                android:id="@+id/ivProfileIcon"
-                android:layout_width="70dp"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/ivNotificationIcon"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bottom_nav_item_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/nav_notifications"
+                    android:padding="@dimen/spacing_s"
+                    app:srcCompat="@drawable/notification_icon"
+                    app:tint="@color/secondary" />
+            </FrameLayout>
+
+            <!-- Profile -->
+            <FrameLayout
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                app:srcCompat="@drawable/profile_icon"
-                android:layout_weight="1"/>
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/ivProfileIcon"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bottom_nav_item_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:contentDescription="@string/nav_profile"
+                    android:padding="@dimen/spacing_s"
+                    app:srcCompat="@drawable/profile_icon"
+                    app:tint="@color/secondary" />
+            </FrameLayout>
+
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
+
 </LinearLayout>

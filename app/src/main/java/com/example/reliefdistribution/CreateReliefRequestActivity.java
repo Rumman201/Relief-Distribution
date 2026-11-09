@@ -15,6 +15,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.reliefdistribution.data.ai.ReliefTriageAdvisor;
+import com.example.reliefdistribution.data.util.SecuritySanitizer;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -185,6 +187,18 @@ public class CreateReliefRequestActivity extends AppCompatActivity {
 
     private void submitRequest(String category, String priority, String itemName, int quantity,
                                String unit, String location, String notes) {
+        // Enforce input sanitization on all user-submitted fields
+        String sanitizedItemName = SecuritySanitizer.sanitizeInput(itemName, 100);
+        String sanitizedNotes = SecuritySanitizer.sanitizeNotes(notes);
+        String sanitizedUnit = SecuritySanitizer.sanitizeInput(unit, 30);
+        String rawLocation = location.isEmpty() ? selectedAddress : location;
+        String sanitizedLocation = SecuritySanitizer.sanitizeInput(rawLocation, 256);
+
+        if (!SecuritySanitizer.isValidQuantity(quantity)) {
+            tilQuantity.setError("Quantity must be between 1 and 10,000");
+            return;
+        }
+
         btnSubmit.setEnabled(false);
         btnSubmit.setText("Submitting...");
 
@@ -195,21 +209,28 @@ public class CreateReliefRequestActivity extends AppCompatActivity {
 
         long timestamp = System.currentTimeMillis();
 
+        // Evaluate request urgency with AI Triage Advisor
+        ReliefTriageAdvisor triageAdvisor = new ReliefTriageAdvisor();
+        ReliefTriageAdvisor.TriageAssessment assessment = triageAdvisor.evaluate(
+                category, sanitizedItemName, quantity, sanitizedNotes, timestamp);
+
         ReliefRequest request = new ReliefRequest();
         request.setRequestId(requestId);
         request.setSurvivorId(currentUserId);
         request.setCategory(category);
-        request.setPriority(priority);
-        request.setItemName(itemName);
+        request.setPriority(priority != null && !priority.isEmpty() ? priority : assessment.getPriorityTier());
+        request.setAiUrgencyScore(assessment.getUrgencyScore());
+        request.setAiPriorityTier(assessment.getPriorityTier());
+        request.setItemName(sanitizedItemName);
         request.setQuantity(quantity);
-        request.setUnit(unit);
-        request.setLocationAddress(location.isEmpty() ? selectedAddress : location);
-        request.setNotes(notes);
+        request.setUnit(sanitizedUnit);
+        request.setLocationAddress(sanitizedLocation);
+        request.setNotes(sanitizedNotes);
         request.setStatus(ReliefRequest.STATUS_PENDING);
         request.setTimestamp(timestamp);
         request.setCreatedAt(timestamp);
 
-        if (selectedLocation != null) {
+        if (selectedLocation != null && SecuritySanitizer.isValidCoordinates(selectedLocation.latitude, selectedLocation.longitude)) {
             request.setLatitude(selectedLocation.latitude);
             request.setLongitude(selectedLocation.longitude);
         }

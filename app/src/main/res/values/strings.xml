@@ -6,7 +6,23 @@
         <item>Survivor</item>
     </string-array>
 
-    <string name="my_map_api_key">
-        AIzaSyCigtRRj8Lc7PdEPDgWCnjwh837kynOKzk
-    </string>
+    <!-- Navigation & Accessibility Labels -->
+    <string name="nav_home">Home</string>
+    <string name="nav_chat">Chat</string>
+    <string name="nav_notifications">Notifications</string>
+    <string name="nav_profile">Profile</string>
+    <string name="logo_content_desc">Relief distribution system hero illustration</string>
+    <string name="emergency_call_desc">Emergency 999 hotline</string>
+    <string name="tracking_icon_desc">GPS tracking icon</string>
+    <string name="features_icon_desc">Disaster response features</string>
+    <string name="settings_icon_desc">Settings and account configuration</string>
+    <string name="info_icon_desc">Disaster preparedness information</string>
+    <string name="help_icon_desc">Emergency assistance request</string>
+    <string name="location_icon_desc">Relief distribution points</string>
+
+    <!-- Status Labels -->
+    <string name="status_online">System Online</string>
+    <string name="status_offline">Offline Mode</string>
+    <string name="tracking_broadcasting">Broadcasting Live GPS</string>
+    <string name="tracking_browsing">Viewing Relief Points</string>
 </resources>

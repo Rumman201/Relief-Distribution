@@ -1,53 +1,103 @@
-# Relief Distribution App
+# GPS Guided Relief Distribution System
 
-A comprehensive Android application designed to facilitate disaster relief operations. The app bridges the gap between relief distributors and survivors, ensuring efficient, organized, and transparent distribution of resources during crises.
+An Android application engineered for disaster relief operations and humanitarian logistics coordination, connecting Disaster Survivors with Relief Distributors.
 
-## Features
+---
 
-* **Role-Based Access:** Dedicated features and dashboards tailored specifically for **Survivors** and **Distributors**.
-* **Authentication:** Secure user registration, login, and profile management using Firebase Authentication.
-* **Location & Mapping:** Integrated with Google Maps and Location Services to pinpoint survivor locations and coordinate relief efforts accurately.
-* **Real-time Data:** Utilizes Firebase Realtime Database to store and sync distribution data, requests, and updates seamlessly.
-* **Communication:** Includes phone call intent permissions to allow direct communication between distributors and survivors.
+## 1. System Capabilities & Personas
 
-## Tech Stack
+- **Disaster Survivors**:
+  - Request emergency food rations, clean water, and medical aid.
+  - Locate nearby relief distribution hubs and active aid convoys.
+  - Access disaster response advisories and emergency 999 telephone hotlines.
+- **Relief Distributors**:
+  - Broadcast live GPS tracking telemetry to disaster coordination hubs.
+  - Manage distribution supply drops and relief operations.
+  - Monitor incoming emergency assistance requests in real-time.
 
-* **Platform:** Android (Java / Kotlin)
-* **Backend:** Firebase (Realtime Database, Authentication, Analytics, BOM)
-* **Maps/Location:** Google Maps API, Google Play Services Location
-* **UI Components:** AndroidX, Material Design, ConstraintLayout
+---
 
-## Requirements
+## 2. Technology Stack
 
-* **Minimum SDK:** 24 (Android 7.0 Nougat)
-* **Target SDK:** 34 (Android 14)
-* **Java Compatibility:** JavaVersion 11
+- **Target OS**: Android 7.0 (API 24) to Android 14 (API 34)
+- **Runtime**: OpenJDK 17 (Java 11/17 compatibility)
+- **Build System**: Gradle 8.9 (Kotlin DSL) with Android Gradle Plugin (AGP) 8.7.3
+- **Cloud Backend**: Google Firebase (Authentication & Realtime Database)
+- **Geospatial & Maps**: Google Play Services Maps & Location SDK
 
-## Setup & Installation
+---
 
-1. **Clone the repository:**
+## 3. Developer Onboarding & Quickstart
+
+### Prerequisites
+1. **Java Development Kit**: OpenJDK 17 (`JAVA_HOME` pointing to JDK 17).
+2. **Android SDK**: Android SDK Platform 34 and Build-Tools 34.0.0 (`ANDROID_HOME` configured).
+
+### Setup Configuration
+1. Clone the repository:
    ```bash
-   git clone <your-repository-url>
+   git clone <repo-url>
+   cd Relief-Distribution-App
    ```
-2. **Open the project** in Android Studio.
-3. **Firebase Setup:** 
-   * Create a project in the [Firebase Console](https://console.firebase.google.com/).
-   * Download the `google-services.json` file and place it in the `app/` directory.
-   * Enable Authentication and Realtime Database in your Firebase project.
-4. **Google Maps API Setup:**
-   * Generate a Google Maps API Key from the [Google Cloud Console](https://console.cloud.google.com/).
-   * Add the API key to your `res/values/strings.xml` file:
-     ```xml
-     <string name="my_map_api_key">YOUR_API_KEY_HERE</string>
-     ```
-5. **Sync and Build:** Sync the project with Gradle files and build the app.
-6. **Run:** Deploy the app on an Android emulator or a physical device.
+2. Set up local configuration from the provided template:
+   ```bash
+   cp local.properties.example local.properties
+   ```
+3. Edit `local.properties` to ensure `sdk.dir` matches your local Android SDK path and provide your Google Maps API key:
+   ```properties
+   sdk.dir=C\:\\Users\\<Username>\\AppData\\Local\\Android\\Sdk
+   MAPS_API_KEY=AIzaSy...YourKey...
+   ```
 
-## Project Structure
+### Build & Verification Commands
+- **Execute Unit Test Suite**:
+  ```bash
+  ./gradlew testDebugUnitTest
+  ```
+- **Assemble Debug APK**:
+  ```bash
+  ./gradlew assembleDebug
+  ```
+  Generated artifact: `app/build/outputs/apk/debug/app-debug.apk`
 
-* `StartActivity` / `WelcomeActivity` / `MainActivity`: Onboarding and initial navigation.
-* `LoginActivity` / `SignUpActivity`: User authentication flows.
-* `DistributorDashboard`: Core interface for relief distributors.
-* `SurvivorDashboard`: Core interface for users requesting/receiving relief.
-* `GoogleMap`: Map views for routing and location tracking.
-* `Informations` / `Profile`: User data and details management.
+---
+
+## 4. Architecture & Engineering Documentation
+
+Persistent engineering intelligence and decision records are maintained in [`docs/upgrade/`](docs/upgrade/):
+- [`01-project-inventory.md`](docs/upgrade/01-project-inventory.md): Full component and dependency catalog.
+- [`02-architecture-assessment.md`](docs/upgrade/02-architecture-assessment.md): Architectural topology and Clean MVVM strategy.
+- [`03-engineering-audit.md`](docs/upgrade/03-engineering-audit.md): Specialist audit findings across 10 disciplines.
+- [`04-baseline-metrics.md`](docs/upgrade/04-baseline-metrics.md): Verified build, test, and artifact measurements.
+- [`05-master-roadmap.md`](docs/upgrade/05-master-roadmap.md): Complete 10-phase transformation roadmap.
+- [`06-phase-1-execution.md`](docs/upgrade/06-phase-1-execution.md): Phase 1 implementation record and verification.
+- [`07-risk-register.md`](docs/upgrade/07-risk-register.md): Technical and operational risk matrix.
+- [`08-architecture-decisions.md`](docs/upgrade/08-architecture-decisions.md): Architecture Decision Records (ADRs).
+- [`09-phase-handoff.md`](docs/upgrade/09-phase-handoff.md): Multi-agent phase transition and prerequisites.
+- [`skill-registry.md`](docs/upgrade/skill-registry.md): Active specialist agent skills in `.agents/skills/`.
+
+---
+
+## 5. Security & Privacy Invariants
+
+1. **Zero Plaintext Passwords**: Passwords are never stored in client databases, models, or SharedPreferences. Authentication is handled exclusively by Google Firebase Authentication.
+2. **Secrets Protection**: API keys are injected via `local.properties` and Gradle manifest placeholders; never committed in `strings.xml`.
+3. **Safe Telephony**: Emergency 999 calls utilize `Intent.ACTION_DIAL` requiring user confirmation, eliminating dangerous `CALL_PHONE` permissions.
+
+---
+
+## 6. Transformation Program Status
+
+| Phase | Title | Status |
+| :---: | :--- | :---: |
+| **Phase 1** | **Project Intelligence, Foundations & Critical Fixes** | **COMPLETED** |
+| Phase 2 | Architecture Modernization & Clean MVVM Decoupling | Planned (Next) |
+| Phase 3 | Backend, Data Engineering & Offline Resiliency | Planned |
+| Phase 4 | Frontend Experience, Design System & Accessibility | Planned |
+| Phase 5 | Advanced Capabilities & Relief Operations | Planned |
+| Phase 6 | Security, Privacy & Compliance Hardening | Planned |
+| Phase 7 | Performance, Battery & Scalability Engineering | Planned |
+| Phase 8 | DevOps, CI/CD & Operational Excellence | Planned |
+| Phase 9 | Comprehensive QA, Adversarial & Multi-Device Testing | Planned |
+| Phase 10 | Final Overhaul, Production Certification & Release | Planned |
+
