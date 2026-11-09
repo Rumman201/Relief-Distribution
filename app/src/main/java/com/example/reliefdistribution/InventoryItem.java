@@ -91,7 +91,7 @@ public class InventoryItem {
     }
 
     public void setQuantityAvailable(int quantityAvailable) {
-        this.quantityAvailable = quantityAvailable;
+        this.quantityAvailable = Math.max(0, quantityAvailable);
         this.lastUpdated = System.currentTimeMillis();
     }
 
@@ -100,7 +100,7 @@ public class InventoryItem {
     }
 
     public void setQuantityReserved(int quantityReserved) {
-        this.quantityReserved = quantityReserved;
+        this.quantityReserved = Math.max(0, quantityReserved);
         this.lastUpdated = System.currentTimeMillis();
     }
 

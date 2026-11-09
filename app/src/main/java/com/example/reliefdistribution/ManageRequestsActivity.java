@@ -106,6 +106,7 @@ public class ManageRequestsActivity extends AppCompatActivity {
         filteredRequests = new ArrayList<>();
         adapter = new RequestAdapter(filteredRequests);
         rvRequests.setLayoutManager(new LinearLayoutManager(this));
+        rvRequests.setHasFixedSize(true);
         rvRequests.setAdapter(adapter);
     }
 

@@ -80,7 +80,7 @@
                     android:layout_height="16dp"
                     android:layout_gravity="center_vertical"
                     android:src="@drawable/ic_quantity"
-                    android:tint="@color/dark_gray" />
+                    app:tint="@color/dark_gray" />
 
                 <TextView
                     android:id="@+id/tvAvailableQty"
@@ -103,7 +103,7 @@
                     android:layout_height="16dp"
                     android:layout_gravity="center_vertical"
                     android:src="@drawable/ic_reserved"
-                    android:tint="@color/dark_gray" />
+                    app:tint="@color/dark_gray" />
 
                 <TextView
                     android:id="@+id/tvReservedQty"
@@ -127,7 +127,7 @@
                     android:layout_height="16dp"
                     android:layout_gravity="center_vertical"
                     android:src="@drawable/ic_unit"
-                    android:tint="@color/dark_gray" />
+                    app:tint="@color/dark_gray" />
 
                 <TextView
                     android:id="@+id/tvUnit"
@@ -159,7 +159,7 @@
                     android:layout_height="16dp"
                     android:layout_gravity="center_vertical"
                     android:src="@drawable/ic_location"
-                    android:tint="@color/dark_gray" />
+                    app:tint="@color/dark_gray" />
 
                 <TextView
                     android:id="@+id/tvLocation"
@@ -183,7 +183,7 @@
                     android:layout_height="16dp"
                     android:layout_gravity="center_vertical"
                     android:src="@drawable/ic_calendar"
-                    android:tint="@color/dark_gray" />
+                    app:tint="@color/dark_gray" />
 
                 <TextView
                     android:id="@+id/tvExpiryDate"

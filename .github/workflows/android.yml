@@ -6,9 +6,16 @@ on:
   pull_request:
     branches: [ "master", "main" ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    name: Build & Verify Test Suite
+    name: Build, Verify Test Suite & Package
     runs-on: ubuntu-latest
 
     steps:
@@ -29,15 +36,34 @@ jobs:
       run: |
         echo "MAPS_API_KEY=AIzaSy_CI_DUMMY_KEY_FOR_TESTS" > local.properties
 
-    - name: Run Unit Tests
+    - name: Run Android Lint Check
+      run: ./gradlew lintDebug --stacktrace
+
+    - name: Run Hermetic Unit Test Suite
       run: ./gradlew testDebugUnitTest --stacktrace
 
     - name: Assemble Debug APK
       run: ./gradlew assembleDebug --stacktrace
 
-    - name: Upload Debug APK Artifact
+    - name: Generate Cryptographic SHA-256 Digest
+      run: |
+        sha256sum app/build/outputs/apk/debug/app-debug.apk > app/build/outputs/apk/debug/app-debug.apk.sha256
+        echo "Generated SHA-256 Checksum:"
+        cat app/build/outputs/apk/debug/app-debug.apk.sha256
+
+    - name: Upload Debug APK & Checksum Artifact
       uses: actions/upload-artifact@v4
       with:
         name: relief-distribution-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: |
+          app/build/outputs/apk/debug/app-debug.apk
+          app/build/outputs/apk/debug/app-debug.apk.sha256
 
+    - name: Upload Test & Lint Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-and-lint-reports
+        path: |
+          app/build/reports/tests/testDebugUnitTest/
+          app/build/reports/lint-results-debug.html

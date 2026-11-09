@@ -448,6 +448,393 @@ Relief distributors operating in disaster zones frequently enter cellular blacko
 - **Positive**: Zero data loss during typical blackouts; bounded memory footprint (< 7 KB); dramatic battery savings; atomic single-roundtrip cloud upload.
 - **Negative**: If outages exceed 100 polling intervals, oldest breadcrumbs are evicted to prioritize recent trajectory.
 
+---
+
+## ADR-020: Zero-Trust Server-Side RBAC Enforcement in Firebase Realtime Database
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Principal Security Architect, Zero-Trust Engineer, Principal Backend Engineer
+
+### Context & Problem Statement
+Prior to Phase 6, client-side code performed role checks, but the Firebase Realtime Database rules (`database.rules.json`) were partially configured or missing rules for `/Inventory` and `/Notifications`. Furthermore, a registered user could write directly to their `/Users/$uid/role` property, allowing a malicious Survivor to elevate themselves to Distributor status.
+
+### Decision Drivers
+- Zero-trust architecture: Never trust client-side validation alone.
+- Complete horizontal and vertical role-based access control (RBAC).
+- Role immutability post-registration.
+
+### Considered Options
+1. **Option 1**: Rely on client UI to hide distributor buttons from survivors.
+2. **Option 2 (Chosen)**: Enforce strict declarative rules in `database.rules.json`:
+   - Default deny (`.read: false`, `.write: false`) at root.
+   - Role immutability: `(!data.exists() || data.child('role').val() === newData.child('role').val())`.
+   - `/Inventory` write restricted strictly to `root.child('Users').child(auth.uid).child('role').val() === 'Distributor'`.
+   - `/Notifications/$userId` read and update restricted to `$userId === auth.uid`.
+   - Relief requests restricted to survivor-owner creation and distributor-only status progression.
+
+### Consequences
+- **Positive**: Complete cloud-level privilege enforcement; privilege escalation mathematically blocked; tenant data isolated.
+- **Negative**: Administrative role overrides must be performed via Firebase Admin SDK or Cloud Console.
+
+---
+
+## ADR-021: Production R8 / ProGuard Obfuscation and Automated Log Stripping
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Principal Security Architect, DevSecOps Lead, Android Platform Engineer
+
+### Context & Problem Statement
+The default ProGuard configuration was empty, risking runtime serialization failures in release builds when Firebase reflection encounters obfuscated field names. Additionally, diagnostic `Log.*` statements could leak user email, phone, and location identifiers to Logcat in production.
+
+### Decision Drivers
+- Prevent PII leakage via Logcat on production devices.
+- Guarantee Firebase data models deserialize reliably in release builds.
+- Protect business logic from trivial static decompilation.
+
+### Considered Options
+1. **Option 1**: Disable R8 obfuscation entirely (`minifyEnabled false`).
+2. **Option 2 (Chosen)**: Hardened `app/proguard-rules.pro`:
+   - Strip all `android.util.Log` and `PrintStream` calls using `-assumenosideeffects` in release builds.
+   - Retain Firebase data models and accessors (`-keep class com.example.reliefdistribution.data.model.** { *; }`, `User`, `ReliefRequest`, `InventoryItem`, `Notification`).
+   - Retain line numbers for crash diagnostics (`-keepattributes SourceFile,LineNumberTable`).
+
+### Consequences
+- **Positive**: Zero PII emitted to device logs in production; crash reports maintain stack trace line fidelity; reflection models remain intact.
+- **Negative**: Debugging release binaries locally requires specific mapping files (`mapping.txt`).
+
+---
+
+## ADR-022: Android Storage Isolation & Backup Protection
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Privacy & Compliance Engineer, Security Architect, Mobile Lead
+
+### Context & Problem Statement
+Default Android Auto-Backup (API 23+) and Cloud Migration (API 31+) back up application private storage, including SharedPreferences and local SQLite databases, to Google Drive and ADB archives. An attacker with physical access could extract sensitive user IDs or cached session data via ADB backup.
+
+### Decision Drivers
+- Prevent unauthorized extraction of user identifiers and cached auth session state.
+- Comply with GDPR data minimization and OWASP MASVS-STORAGE standards.
+
+### Considered Options
+1. **Option 1**: Allow full backup for user convenience.
+2. **Option 2 (Chosen)**: Enforce explicit exclusion policies in `backup_rules.xml` (API < 31) and `data_extraction_rules.xml` (API 31+):
+   - Exclude all `sharedpref` domains from cloud backup and device transfer.
+   - Exclude local databases and root file directories.
+
+### Consequences
+- **Positive**: Cached session tokens and user identifiers cannot be extracted via ADB or cloud drive snapshots.
+- **Negative**: Reinstalled apps require the user to log in again rather than restoring from cloud backups.
+
+---
+
+## ADR-023: IoT Edge Telemetry Anti-Replay & Geographic Boundary Invariants
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: IoT Systems Architect, Security Engineer, Field Lead
+
+### Context & Problem Statement
+GPS telemetry emitted from mobile edge handsets could be spoofed with invalid coordinates (e.g. latitude > 90.0) or captured and replayed hours later to forge vehicle movements.
+
+### Decision Drivers
+- Guarantee physical coordinate validity across map rendering and database queries.
+- Prevent replay attacks using captured telemetry packets.
+- Protect device RAM from unbounded queue growth during cellular outages.
+
+### Considered Options
+1. **Option 1**: Trust all coordinates emitted by Android location providers.
+2. **Option 2 (Chosen)**: Multi-layer validation:
+   - Coordinate boundary clamping: Latitude in `[-90.0, 90.0]`, Longitude in `[-180.0, 180.0]`.
+   - Timestamp freshness evaluation: Reject timestamps older than max age or skewed > 60 seconds into the future.
+   - Bounded FIFO ring buffer (`OfflineTelemetryBuffer`, max 100 entries) with oldest-entry eviction.
+
+### Consequences
+- **Positive**: Spoofed coordinates and replayed packets are rejected at ingestion; memory exhaustion DoS prevented.
+- **Negative**: Devices with severely inaccurate system clocks (> 60s future skew) must synchronize with network time.
+
+---
+
+## ADR-024: Input Sanitization & Script Injection Mitigation Boundary
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Application Security Engineer, Principal Full-Stack Engineer
+
+### Context & Problem Statement
+Free-form text fields (such as aid request notes, item names, and addresses) could contain HTML markup, script tags (`<script>`), or control characters that risk XSS execution if rendered in web portals, admin consoles, or web views.
+
+### Decision Drivers
+- Neutralize XSS and script injection at the client-to-model boundary.
+- Clamp maximum payload length to prevent denial-of-service memory bloat.
+- Preserve readable human-entered text and multi-line notes.
+
+### Considered Options
+1. **Option 1**: Raw passthrough of user inputs without sanitization.
+2. **Option 2 (Chosen)**: Centralized `SecuritySanitizer.java` utility:
+   - Strip all HTML and script tags via regex pattern matching.
+   - Strip non-printable control characters while preserving newlines and tabs.
+   - Enforce hard length ceilings (1,000 chars for notes, 100 chars for item names).
+   - Integrate into `CreateReliefRequestActivity.submitRequest()`.
+
+### Consequences
+- **Positive**: Injected markup neutralized before reaching domain models or database storage; payloads bounded.
+- **Negative**: Legitimate use of `<` or `>` characters in notes is stripped; users must use plain descriptive language.
+
+---
+
+## ADR-025: Least-Privilege Automated CI/CD Pipeline & Concurrency Control
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Principal Platform Engineer, Security Architect, DevOps Lead
+
+### Context & Problem Statement
+CI/CD runners executing pull request evaluations and push builds often run with broad write permissions, exposing repositories to supply-chain attacks if an external action or dependency is compromised. Furthermore, rapid commits trigger redundant, concurrent builds that waste compute minutes and introduce race conditions in artifact generation.
+
+### Decision Drivers
+- Enforce the Principle of Least Privilege across all CI workflows.
+- Cancel superseded workflow runs automatically on incoming commits.
+- Ensure automated, hermetic execution of unit tests, lint checks, and artifact assembly.
+
+### Considered Options
+1. **Option 1**: Retain default elevated token permissions and allow redundant pipeline runs.
+2. **Option 2 (Chosen)**: Hardened GitHub Actions specification in `.github/workflows/android.yml`:
+   - Declare explicit top-level `permissions: contents: read`.
+   - Add `concurrency` block with `cancel-in-progress: true` keyed by workflow and git ref.
+   - Fail-closed execution sequencing: lint check -> 124 unit tests -> APK assembly -> SHA-256 attestation -> report archival.
+
+### Consequences
+- **Positive**: Supply-chain attack surface minimized; compute runner waste eliminated; deterministic verification guaranteed.
+- **Negative**: Workflows requiring branch pushes (e.g. automated release tagging) must be isolated into separate, authenticated release dispatch workflows.
+
+---
+
+## ADR-026: Cryptographic Artifact Provenance Attestation & Checksum Verification
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Release Manager, Application Security Lead, Platform Engineer
+
+### Context & Problem Statement
+In humanitarian disaster operations, field teams download and install Android application binaries (`.apk`) via sideloading, local MDM distributions, or unstable cellular connections. Tampered or partially downloaded binaries can lead to device crashes or unauthorized data access.
+
+### Decision Drivers
+- Provide cryptographic proof of binary provenance and bit-level integrity.
+- Enable offline verification by field administrators prior to handset deployment.
+
+### Considered Options
+1. **Option 1**: Distribute raw APK files without accompanying cryptographic digests.
+2. **Option 2 (Chosen)**: Automated SHA-256 digest generation and attestation:
+   - For every compiled APK (`app-debug.apk` / `app-release.apk`), calculate SHA-256 digest via `sha256sum` or `[System.Security.Cryptography.SHA256]`.
+   - Generate companion `.sha256` attestation file uploaded alongside the binary artifact in CI/CD.
+   - Enforce APK size ceiling (<= 15.0 MB; currently ~10.0 MB).
+
+### Consequences
+- **Positive**: Tampered or corrupted binaries are immediately detectable before installation; release governance is strictly auditable.
+- **Negative**: Field administrators must perform hash verification during offline distribution.
+
+---
+
+## ADR-027: Declarative Infrastructure as Code (IaC) & Multi-Environment Isolation
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Cloud Infrastructure Architect, DevOps Lead, Backend Engineer
+
+### Context & Problem Statement
+Cloud configuration, database security rules, and query indexes previously relied on implicit setup, risking manual drift between developer testing and live disaster relief environments.
+
+### Decision Drivers
+- Version-control all cloud infrastructure targets, security rules, and database indexes.
+- Isolate development, staging, and production datastore instances.
+- Enable automated, reproducible infrastructure deployment via the Firebase CLI.
+
+### Considered Options
+1. **Option 1**: Configure database rules and indexes manually via the Firebase Web Console.
+2. **Option 2 (Chosen)**: Version-controlled declarative configuration:
+   - `firebase.json`: Links declarative rules (`database.rules.json`) to database targets.
+   - `.firebaserc`: Defines project aliases (`default: relief-distribution-2w5`, `staging`, `production`).
+   - `database.rules.json`: Contains all security validations and `.indexOn` query specifications.
+
+### Consequences
+- **Positive**: 100% declarative reproducibility; console-driven manual drift eliminated; automated staging vs. production deployment paths established.
+- **Negative**: All rule modifications require Git commits and CLI deployment rather than quick console edits.
+
+---
+
+## ADR-028: OpenTelemetry Structured JSON Logging & Distributed Trace Correlation
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Observability Architect, SRE Lead, Mobile Lead
+
+### Context & Problem Statement
+Unstructured plain-text Android logging (`Log.d`, `Log.e`) makes automated parsing, filtering, and cross-tier event correlation impossible in centralized observability backends. Furthermore, logging multi-step workflows without correlation IDs prevents tracing aid requests across client creation, AI triage, and distributor assignment.
+
+### Decision Drivers
+- Standardize on OpenTelemetry-compatible structured JSON log event schemas.
+- Implement distributed trace correlation (`traceId`) across thread boundaries.
+- Automate PII and credential sanitization within logging utilities.
+
+### Considered Options
+1. **Option 1**: Continue using unstructured raw string logs.
+2. **Option 2 (Chosen)**: Enhanced `AppLogger.java` architecture:
+   - Manage thread-local trace correlation IDs (`startTrace()`, `getTraceId()`, `clearTrace()`).
+   - Format structured JSON payloads with canonical fields (`level`, `tag`, `action`, `traceId`, `attributes`).
+   - Automatically redact attributes containing `email`, `phone`, `password`, `token`, or `secret`.
+   - Strip debug logging in production release builds via ProGuard/R8.
+
+### Consequences
+- **Positive**: Distributed workflows are easily traceable across centralized log aggregators; PII leakage prevented; sub-millisecond logging latency.
+- **Negative**: Developers must pass operation tags and structured attributes rather than simple ad-hoc log strings.
+
+---
+
+## ADR-029: Automated Declarative Disaster Recovery & Snapshot Durability
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Disaster Recovery Lead, Platform SRE, Data Engineer
+
+### Context & Problem Statement
+Disaster relief operations cannot tolerate data loss or prolonged database unavailability during active field coordination. A catastrophic cloud failure, accidental deletion, or database corruption could leave relief coordinators blind to pending survivor aid requests.
+
+### Decision Drivers
+- Enforce strict Recovery Point Objective (RPO <= 1 hour) and Recovery Time Objective (RTO <= 30 minutes).
+- Automate scheduled snapshot exports of all mandatory collections (`users`, `relief_requests`, `inventory`, `notifications`, `distributor_locations`).
+- Ensure backups are sanitized, cryptographically signed, and schema-verified upon creation.
+
+### Considered Options
+1. **Option 1**: Rely exclusively on cloud provider managed backups without client verification.
+2. **Option 2 (Chosen)**: Declarative, automated snapshot and verification utilities (`Backup-FirebaseRtdb.ps1` & `backup_firebase_rtdb.py`):
+   - Hourly declarative snapshot exports producing timestamped JSON datasets with embedded SHA-256 digests.
+   - Immediate read-back verification drill validating Schema v2.0.0 and collection presence.
+   - Standard Operating Procedure (SOP-02) documenting point-in-time restoration.
+
+### Consequences
+- **Positive**: Verified data durability; verified RPO <= 1h and RTO <= 30m; automated schema and integrity checks.
+- **Negative**: Storage management policies must rotate and archive older snapshot files.
+
+---
+
+## ADR-030: Strict Non-Positive Quantity Rejection in Domain Automations
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Principal QA Architect, Lead Backend Engineer, Domain Modeler
+
+### Context & Problem Statement
+`ReliefWorkflowAutomator.java` allowed claims on requests with `quantity <= 0`, risking warehouse stock calculation corruption when requests bypassed UI form validation.
+
+### Decision Drivers
+- Protect inventory reservation math from zero or negative integer mutations.
+- Enforce defense-in-depth at the domain layer regardless of presentation validation.
+
+### Considered Options
+1. **Option 1**: Rely exclusively on client UI validation in `CreateReliefRequestActivity`.
+2. **Option 2 (Chosen)**: Enforce `requestedQty <= 0` rejection in `onDistributorAcceptRequest`, `onDeliveryCompleted`, and `onRequestCancelled`.
+
+### Consequences
+- **Positive**: Corrupted or tampered zero/negative quantity requests cannot mutate inventory stock.
+- **Negative**: Requests must always have a positive quantity integer >= 1.
+
+---
+
+## ADR-031: Bounded Temporal Clamping & Text Truncation in AI Triage Evaluation
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: AI Red-Team Engineer, Principal Performance Architect
+
+### Context & Problem Statement
+Device clock skews in disaster zones caused future creation timestamps (`createdAt > now`), resulting in negative `ageHours` in triage cache keys. Furthermore, adversarial notes with extreme lengths (>10,000 chars) risked algorithmic regex search stalls.
+
+### Decision Drivers
+- Eliminate negative age hours in cache keys.
+- Prevent denial-of-service memory exhaustion during NLP keyword extraction.
+
+### Considered Options
+1. **Option 1**: Process unconstrained string lengths and raw timestamp differences.
+2. **Option 2 (Chosen)**: Clamp `ageHours = Math.max(0, now - createdAt) / 3600000L` and bound note parsing length to 2,000 characters.
+
+### Consequences
+- **Positive**: Immune to future clock skew cache corruption; immune to regex text-bomb denial of service.
+- **Negative**: Extremely long notes beyond 2,000 characters are truncated for keyword scoring.
+
+---
+
+## ADR-032: Safe Non-Positive Length Boundary in Security Input Sanitizer
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Application Security Lead, Principal SDET
+
+### Context & Problem Statement
+Passing `maxLength <= 0` to `SecuritySanitizer.sanitizeInput(input, maxLength)` resulted in an unchecked `StringIndexOutOfBoundsException`.
+
+### Decision Drivers
+- Guarantee robust crash-free input sanitization under all integer parameters.
+
+### Considered Options
+1. **Option 1**: Throw `IllegalArgumentException` on negative `maxLength`.
+2. **Option 2 (Chosen)**: Return `""` safely if `maxLength <= 0`.
+
+### Consequences
+- **Positive**: Sanitizer never crashes on non-positive length constraints.
+- **Negative**: Callers must specify `maxLength > 0` to receive sanitized content.
+
+---
+
+## ADR-033: Non-Negative Invariant Clamping in Warehouse Inventory Models
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Data Architect, QA Verification Specialist
+
+### Context & Problem Statement
+Direct calls to `setQuantityAvailable(int)` and `setQuantityReserved(int)` in `InventoryItem.java` accepted negative integers without bounds checking.
+
+### Decision Drivers
+- Enforce physical inventory invariants directly at the entity level.
+
+### Considered Options
+1. **Option 1**: Allow raw integer setters and rely on caller validation.
+2. **Option 2 (Chosen)**: Clamp values via `Math.max(0, quantity)` in both setters.
+
+### Consequences
+- **Positive**: Negative stock states cannot exist in entity memory.
+- **Negative**: Callers attempting to decrement past zero will have values clamped to 0 rather than negative numbers.
+
+---
+
+## ADR-034: Full-System Release Candidate Certification & Objective Gate Qualification
+
+- **Status**: Accepted
+- **Date**: 2026-11-09
+- **Deciders**: Independent Release Quality Lead, Principal QA Architect, Mobile Platform Lead
+
+### Context & Problem Statement
+Prior to promoting builds to production release candidates, an independent assessment must evaluate the system across all 18 Quality Gates (Gates A through R) based strictly on executed evidence rather than optimistic claims.
+
+### Decision Drivers
+- Establish clear Go / No-Go qualification criteria.
+- Bind release certification to a verifiable cryptographic artifact digest (SHA-256).
+
+### Considered Options
+1. **Option 1**: Rely on developer sign-off without independent gate verification.
+2. **Option 2 (Chosen)**: Comprehensive gate matrix (Gates A through R) backed by 131 passing tests, clean lint, and SHA-256 attestation.
+
+### Consequences
+- **Positive**: Unassailable release candidate governance; zero unverified claims.
+- **Negative**: Release candidates must re-run all 18 gates if code modifications occur.
+
+
+
+
 
 
 

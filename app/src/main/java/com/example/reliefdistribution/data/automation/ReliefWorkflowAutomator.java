@@ -87,6 +87,11 @@ public class ReliefWorkflowAutomator {
         }
 
         int requestedQty = request.getQuantity();
+        if (requestedQty <= 0) {
+            return new AutomationResult(false, currentStatus,
+                    inventoryItem.getQuantityAvailable(), inventoryItem.getQuantityReserved(),
+                    null, "Cannot accept request with non-positive quantity: " + requestedQty);
+        }
         if (inventoryItem.getQuantityAvailable() < requestedQty) {
             return new AutomationResult(false, currentStatus,
                     inventoryItem.getQuantityAvailable(), inventoryItem.getQuantityReserved(),
@@ -169,8 +174,10 @@ public class ReliefWorkflowAutomator {
 
         // Deduct from reserved inventory (fulfilled)
         int requestedQty = request.getQuantity();
-        int newReserved = Math.max(0, inventoryItem.getQuantityReserved() - requestedQty);
-        inventoryItem.setQuantityReserved(newReserved);
+        if (requestedQty > 0) {
+            int newReserved = Math.max(0, inventoryItem.getQuantityReserved() - requestedQty);
+            inventoryItem.setQuantityReserved(newReserved);
+        }
 
         request.setStatus(ReliefRequest.STATUS_COMPLETED);
         request.setUpdatedAt(System.currentTimeMillis());
@@ -206,9 +213,11 @@ public class ReliefWorkflowAutomator {
         if (inventoryItem != null && (ReliefRequest.STATUS_ACCEPTED.equalsIgnoreCase(previousStatus) ||
                 ReliefRequest.STATUS_IN_PROGRESS.equalsIgnoreCase(previousStatus))) {
             int qty = request.getQuantity();
-            int newReserved = Math.max(0, inventoryItem.getQuantityReserved() - qty);
-            inventoryItem.setQuantityReserved(newReserved);
-            inventoryItem.setQuantityAvailable(inventoryItem.getQuantityAvailable() + qty);
+            if (qty > 0) {
+                int newReserved = Math.max(0, inventoryItem.getQuantityReserved() - qty);
+                inventoryItem.setQuantityReserved(newReserved);
+                inventoryItem.setQuantityAvailable(inventoryItem.getQuantityAvailable() + qty);
+            }
         }
 
         request.setStatus(ReliefRequest.STATUS_CANCELLED);

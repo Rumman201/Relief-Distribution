@@ -102,6 +102,7 @@ public class InventoryManagementActivity extends AppCompatActivity {
         filteredList = new ArrayList<>();
         adapter = new InventoryAdapter(filteredList);
         rvInventory.setLayoutManager(new LinearLayoutManager(this));
+        rvInventory.setHasFixedSize(true);
         rvInventory.setAdapter(adapter);
     }
 

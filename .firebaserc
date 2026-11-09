@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "relief-distribution-2w5",
+    "staging": "relief-distribution-staging",
+    "production": "relief-distribution-prod"
+  }
+}
+

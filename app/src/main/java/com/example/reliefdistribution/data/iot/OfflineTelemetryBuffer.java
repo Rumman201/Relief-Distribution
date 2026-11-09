@@ -51,6 +51,27 @@ public class OfflineTelemetryBuffer {
     }
 
     /**
+     * Appends a telemetry fix with intelligent stationary point compaction.
+     * If device is stationary and coordinates haven't changed, updates the latest entry's
+     * timestamp instead of consuming a new queue slot.
+     */
+    public synchronized boolean enqueueWithCompaction(@NonNull LocationTelemetry telemetry) {
+        if (!buffer.isEmpty()) {
+            LocationTelemetry last = buffer.peekLast();
+            if (last != null && telemetry.getSpeed() < 0.5f && last.getSpeed() < 0.5f) {
+                double latDiff = Math.abs(last.getLatitude() - telemetry.getLatitude());
+                double lonDiff = Math.abs(last.getLongitude() - telemetry.getLongitude());
+                if (latDiff < 0.00005 && lonDiff < 0.00005) {
+                    // Update latest fix in-place, preserving older movement trajectory
+                    buffer.pollLast();
+                    return buffer.offerLast(telemetry);
+                }
+            }
+        }
+        return enqueue(telemetry);
+    }
+
+    /**
      * Drains all buffered telemetry points for batch transmission.
      */
     @NonNull

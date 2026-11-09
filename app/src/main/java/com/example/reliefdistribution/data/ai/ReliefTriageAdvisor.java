@@ -3,6 +3,8 @@ package com.example.reliefdistribution.data.ai;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.reliefdistribution.data.cache.InMemoryLruCache;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +30,9 @@ public class ReliefTriageAdvisor {
     public static final String RISK_MEDICAL_COMPLICATION = "MEDICAL_COMPLICATION";
     public static final String RISK_SEVERE_MALNUTRITION = "SEVERE_MALNUTRITION_RISK";
     public static final String RISK_LONG_WAIT_TIME = "CRITICAL_WAIT_TIME_EXCEEDED";
+
+    // High-performance inference memoization cache (Capacity: 256, TTL: 10 minutes)
+    private final InMemoryLruCache<String, TriageAssessment> memoizationCache = new InMemoryLruCache<>(256, 10 * 60 * 1000L);
 
     /**
      * Strongly-typed evaluation result.
@@ -105,6 +110,21 @@ public class ReliefTriageAdvisor {
                                      int quantity,
                                      @Nullable String notes,
                                      long createdAt) {
+        // Compute discrete age bucket (hours) to enable deterministic cache reuse (clamped >= 0)
+        long ageHours = Math.max(0, System.currentTimeMillis() - createdAt) / (3600 * 1000L);
+        int safeQty = Math.max(0, quantity);
+        String safeNotes = notes != null ? (notes.length() > 2000 ? notes.substring(0, 2000) : notes) : "";
+        String cacheKey = (category != null ? category.trim().toLowerCase(Locale.ROOT) : "") + "|"
+                + (itemName != null ? itemName.trim().toLowerCase(Locale.ROOT) : "") + "|"
+                + safeQty + "|"
+                + safeNotes.trim().toLowerCase(Locale.ROOT) + "|"
+                + ageHours;
+
+        TriageAssessment cached = memoizationCache.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+
         int score = 0;
         List<String> risks = new ArrayList<>();
         StringBuilder explanationBuilder = new StringBuilder();
@@ -133,17 +153,17 @@ public class ReliefTriageAdvisor {
         }
         score += categoryWeight;
 
-        // 2. Quantity & Scale Multiplier
-        if (quantity > 50) {
+        // 2. Quantity & Scale Multiplier (Safe non-negative)
+        if (safeQty > 50) {
             score += 10;
             explanationBuilder.append("Large group request (+10). ");
-        } else if (quantity > 10) {
+        } else if (safeQty > 10) {
             score += 5;
             explanationBuilder.append("Multi-family allocation (+5). ");
         }
 
-        // 3. Keyword Distress Analysis (Natural Language Context)
-        String combinedText = ((itemName != null ? itemName : "") + " " + (notes != null ? notes : "")).toLowerCase(Locale.ROOT);
+        // 3. Keyword Distress Analysis (Natural Language Context with safe length)
+        String combinedText = ((itemName != null ? itemName : "") + " " + safeNotes).toLowerCase(Locale.ROOT);
 
         if (containsAny(combinedText, "trapped", "flood water", "surrounded", "roof", "submerged", "rising water", "drowning")) {
             score += 35;
@@ -219,7 +239,7 @@ public class ReliefTriageAdvisor {
             recommendedAction = "DEFERRED ALLOCATION: Fulfill during secondary replenishment rounds.";
         }
 
-        return new TriageAssessment(
+        TriageAssessment result = new TriageAssessment(
                 clampedScore,
                 tier,
                 risks,
@@ -227,6 +247,25 @@ public class ReliefTriageAdvisor {
                 explanationBuilder.toString().trim(),
                 true
         );
+
+        memoizationCache.put(cacheKey, result);
+        return result;
+    }
+
+    public long getCacheHitCount() {
+        return memoizationCache.getHitCount();
+    }
+
+    public long getCacheMissCount() {
+        return memoizationCache.getMissCount();
+    }
+
+    public double getCacheHitRatio() {
+        return memoizationCache.getHitRatio();
+    }
+
+    public void clearCache() {
+        memoizationCache.clear();
     }
 
     /**

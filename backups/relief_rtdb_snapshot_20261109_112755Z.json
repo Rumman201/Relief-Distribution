@@ -1,0 +1,87 @@
+﻿{
+    "metadata":  {
+                     "snapshot_id":  "snap_relief-distribution-2w5_20261109_112755Z",
+                     "created_at_utc":  "2026-11-09T11:27:55.9032626Z",
+                     "schema_version":  "2.0.0",
+                     "project_id":  "relief-distribution-2w5",
+                     "total_collections":  5,
+                     "total_records":  8,
+                     "checksum_sha256":  "41f401ba6f8c9bb17a49928e68724503b82bc881ce656291f30b5b0160ad57e4",
+                     "status":  "VERIFIED_EXPORT"
+                 },
+    "data":  {
+                 "inventory":  {
+                                   "inv_002":  {
+                                                   "itemName":  "Water Purification Kits",
+                                                   "category":  "Water",
+                                                   "lastUpdated":  1700000350000,
+                                                   "quantity":  1200,
+                                                   "unit":  "Kits"
+                                               },
+                                   "inv_001":  {
+                                                   "itemName":  "Emergency Rice Ration (10kg)",
+                                                   "category":  "Food",
+                                                   "lastUpdated":  1700000300000,
+                                                   "quantity":  450,
+                                                   "unit":  "Bags"
+                                               }
+                               },
+                 "relief_requests":  {
+                                         "req_001":  {
+                                                         "familyMembers":  5,
+                                                         "fullName":  "Survivor Family A",
+                                                         "reliefType":  "Food \u0026 Water",
+                                                         "urgency":  "High",
+                                                         "status":  "Pending",
+                                                         "location":  "Flood Shelter 2, Sylhet",
+                                                         "userId":  "usr_surv_01",
+                                                         "phone":  "01933334444",
+                                                         "timestamp":  1700000200000
+                                                     }
+                                     },
+                 "users":  {
+                               "usr_surv_01":  {
+                                                   "email":  "family.a@mail.local",
+                                                   "name":  "Survivor Family A",
+                                                   "createdAt":  1700000100000,
+                                                   "phone":  "01933334444",
+                                                   "role":  "recipient"
+                                               },
+                               "usr_dist_01":  {
+                                                   "assignedArea":  "Sector 4",
+                                                   "name":  "Field Unit Alpha",
+                                                   "createdAt":  1700000050000,
+                                                   "phone":  "01822223333",
+                                                   "email":  "alpha@relief.org",
+                                                   "role":  "distributor"
+                                               },
+                               "usr_admin_01":  {
+                                                    "email":  "hq@relief.org",
+                                                    "name":  "Disaster Coordinator HQ",
+                                                    "createdAt":  1700000000000,
+                                                    "phone":  "01711112222",
+                                                    "role":  "admin"
+                                                }
+                           },
+                 "distributor_locations":  {
+                                               "usr_dist_01":  {
+                                                                   "latitude":  24.8949,
+                                                                   "speed":  12.5,
+                                                                   "timestamp":  1700000400000,
+                                                                   "online":  true,
+                                                                   "distributorId":  "usr_dist_01",
+                                                                   "accuracy":  4.2,
+                                                                   "longitude":  91.8687
+                                                               }
+                                           },
+                 "notifications":  {
+                                       "notif_001":  {
+                                                         "title":  "Request Received",
+                                                         "timestamp":  1700000250000,
+                                                         "message":  "Your emergency relief request has been queued for field dispatch.",
+                                                         "recipientId":  "usr_surv_01",
+                                                         "read":  false
+                                                     }
+                                   }
+             }
+}

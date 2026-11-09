@@ -58,5 +58,41 @@ This registry documents all active Antigravity engineering skills created and co
 | `iot-firmware-security` | Edge telemetry anti-spoofing, replay mitigation, disconnect cleanup | Validating GPS coordinates, buffer bounds, freshness | IoT & Edge Security | Core skill for Phase 6 |
 | `security-observability-response` | Security telemetry, PII-safe audit logging, incident response | Designing security audit logs, incident playbooks | SecOps & Observability | Core skill for Phase 6 |
 | `security-regression-engineering` | Continuous security verification, invariant testing, fitness gates | Enforcing security invariants in CI/CD and refactorings | Security Verification | Core skill for Phase 6 |
+| `end-to-end-performance-engineering` | Baseline collection, critical path profiling, optimization ranking | Establishing performance baselines, bottleneck analysis | Performance Architecture | Core skill for Phase 7 |
+| `frontend-runtime-optimization` | Layout flattening, ViewBinding speed, RecyclerView efficiency | Eliminating frame jank, 60/120 FPS optimization | UI / Presentation | Core skill for Phase 7 |
+| `backend-throughput-optimization` | Async I/O, bounded thread executors, payload compaction | Optimizing network dispatch and throughput | Backend & Async | Core skill for Phase 7 |
+| `database-query-performance` | Query optimization, index verification, transaction tuning | Accelerating RTDB queries and atomic claims | Database & Storage | Core skill for Phase 7 |
+| `intelligent-caching-engineering` | Multi-tier LRU cache, tenant-isolated keys, TTL invalidation | In-memory caching for profiles, alerts, inventory | Caching Architecture | Core skill for Phase 7 |
+| `scalable-concurrency-engineering` | Bounded thread pools, backpressure, queue capacity limits | Managing background workers, race condition prevention | Concurrency & Queues | Core skill for Phase 7 |
+| `resilience-fault-tolerance` | Circuit breakers, exponential backoff with jitter, fallbacks | Handling connection flapping, offline graceful degradation | Resilience & SRE | Core skill for Phase 7 |
+| `load-stress-soak-testing` | Controlled load testing, benchmark reproducibility, soak testing | Measuring throughput, tail latencies, memory leaks | Performance QA | Core skill for Phase 7 |
+| `production-slo-engineering` | User-centric SLIs, SLO design, error budgets, alert design | Establishing reliability targets and error budgets | SRE & Operations | Core skill for Phase 7 |
+| `ai-inference-efficiency` | Triage heuristic optimization, assessment memoization cache | Sub-millisecond AI triage, regex pre-compilation | AI Performance | Core skill for Phase 7 |
+| `iot-edge-performance` | Adaptive GPS polling throttling, battery-aware power scaling | Throttling GPS polling by velocity/battery state | IoT & Edge Telemetry | Core skill for Phase 7 |
+| `performance-security-regression` | Performance vs security validation, invariant preservation | Verifying zero security regressions from optimizations | Security Verification | Core skill for Phase 7 |
+| `principal-devops-engineering` | Platform architecture, operational reliability, release automation | Designing or auditing end-to-end delivery lifecycle | DevOps & Platform | Core skill for Phase 8 |
+| `secure-cicd-pipelines` | Secure GitHub Actions, branch protection, artifact provenance | Authoring or modifying CI/CD workflows and actions | CI/CD & Pipeline Security | Core skill for Phase 8 |
+| `infrastructure-as-code-engineering` | Declarative cloud datastores, Firebase rules, index automation | Defining or managing declarative cloud configs | Infrastructure as Code | Core skill for Phase 8 |
+| `cloud-platform-architecture` | Multi-region failover, cloud resource boundaries, serverless RTDB | Evaluating cloud topology, quotas, and limits | Cloud Architecture | Core skill for Phase 8 |
+| `container-kubernetes-operations` | Containerized builds, ephemeral test runners, hermetic testing | Designing Dockerfiles, ephemeral runners, toolchains | Containers & Emulation | Core skill for Phase 8 |
+| `production-observability-engineering` | OpenTelemetry, structured JSON logging, trace correlation | Designing logging, metrics capture, trace propagation | Observability & Telemetry | Core skill for Phase 8 |
+| `slo-alerting-and-incident-response` | Multi-window burn-rate alerts, pager triggers, incident playbooks | Establishing alert rules, severity triage, postmortems | SRE & Incident Response | Core skill for Phase 8 |
+| `progressive-delivery-engineering` | Phased release rings, staged rollouts, automated rollbacks | Managing staged deployment tracks and feature flags | Release Engineering | Core skill for Phase 8 |
+| `disaster-recovery-engineering` | Backup export automation, cold/warm recovery, RPO/RTO enforcement | Automating backups, restoration drills, disaster recovery | Disaster Recovery & BCP | Core skill for Phase 8 |
+| `mlops-llmops-engineering` | Triage model versioning, inference latency tracking, fallbacks | Deploying/updating triage models, tracking inference | MLOps & AI Operations | Core skill for Phase 8 |
+| `iot-fleet-operations` | Distributor GPS tracker fleet management, adaptive sampling | Managing edge trackers, compaction, stale cleanup | IoT Fleet Operations | Core skill for Phase 8 |
+| `operational-release-verification` | Release gate validation, pre-flight checks, checksum attestation | Evaluating release readiness, checksums, sign-offs | Release QA & Verification | Core skill for Phase 8 |
+| `principal-qa-orchestration` | Risk-based test strategy, verification matrices, quality gates | Orchestrating end-to-end full-system QA | QA Architecture & Leadership | Core skill for Phase 9 |
+| `comprehensive-browser-e2e` | End-to-end screen navigation, user journeys, form validation | Testing multi-screen navigation and journeys | UI & E2E Testing | Core skill for Phase 9 |
+| `visual-motion-regression` | Visual consistency, Material 3 tokens, layout scaling, motion QA | Reviewing visual rendering and animation smoothness | Visual & Motion QA | Core skill for Phase 9 |
+| `accessibility-verification` | WCAG 2.2 AA compliance, TalkBack, 48dp touch targets, contrast | Barrier-free inclusive user interface testing | Accessibility & Inclusive UX | Core skill for Phase 9 |
+| `backend-api-contract-qa` | Firebase backend API contracts, schema serialization, errors | Testing data exchange contracts and schemas | API & Data Contract QA | Core skill for Phase 9 |
+| `database-integrity-qa` | RTDB schema constraints, atomic transactions, migrations | Verifying data integrity and concurrency safety | Database & Storage QA | Core skill for Phase 9 |
+| `adversarial-ai-evaluation` | Adversarial AI triage evaluation, prompt injection defense | Stress-testing AI models and scoring bounds | AI Red Teaming & Quality | Core skill for Phase 9 |
+| `workflow-distributed-qa` | Event-driven automations, lifecycle state transitions, retries | Testing automations, queues, and idempotency | Distributed Systems QA | Core skill for Phase 9 |
+| `iot-firmware-verification` | Distributor GPS tracker simulation, edge buffer limits, teardown | Simulating edge IoT streams and buffer bounds | IoT & Edge QA | Core skill for Phase 9 |
+| `chaos-resilience-verification` | Controlled fault injection, network partition, stress recovery | Verifying failure modes and system recovery | Chaos & Resilience QA | Core skill for Phase 9 |
+| `autonomous-defect-remediation` | Automated bug reproduction, root-cause analysis, minimal fixes | Isolating, patching, and testing defects | Defect Remediation & SRE | Core skill for Phase 9 |
+| `release-candidate-certification` | Release qualification, checksum attestation, Go/No-Go decision | Independent release candidate assessment | Release Certification | Core skill for Phase 9 |
 
-All skills reside in `.agents/skills/<skill-name>/SKILL.md` with complete YAML frontmatter and step-by-step engineering protocols. Total registered specialist skills: 54.
+All skills reside in `.agents/skills/<skill-name>/SKILL.md` with complete YAML frontmatter and step-by-step engineering protocols. Total registered specialist skills: 90.

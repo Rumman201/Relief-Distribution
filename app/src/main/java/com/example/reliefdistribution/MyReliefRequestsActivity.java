@@ -72,6 +72,7 @@ public class MyReliefRequestsActivity extends AppCompatActivity {
         requestList = new ArrayList<>();
         adapter = new RequestAdapter(requestList);
         rvRequests.setLayoutManager(new LinearLayoutManager(this));
+        rvRequests.setHasFixedSize(true);
         rvRequests.setAdapter(adapter);
     }
 

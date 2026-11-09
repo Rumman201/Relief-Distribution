@@ -23,7 +23,7 @@
             android:layout_weight="1.5"
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_notification_default"
-            android:tint="@color/design_default_color_primary" />
+            app:tint="@color/design_default_color_primary" />
 
         <!-- Content -->
         <LinearLayout

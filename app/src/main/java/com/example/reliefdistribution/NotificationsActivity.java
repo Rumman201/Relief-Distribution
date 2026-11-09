@@ -68,6 +68,7 @@ public class NotificationsActivity extends AppCompatActivity {
         notifications = new ArrayList<>();
         adapter = new NotificationAdapter(notifications);
         rvNotifications.setLayoutManager(new LinearLayoutManager(this));
+        rvNotifications.setHasFixedSize(true);
         rvNotifications.setAdapter(adapter);
     }
 

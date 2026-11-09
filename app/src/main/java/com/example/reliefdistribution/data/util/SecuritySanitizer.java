@@ -33,6 +33,9 @@ public final class SecuritySanitizer {
         if (input == null) {
             return null;
         }
+        if (maxLength <= 0) {
+            return "";
+        }
 
         String cleaned = SCRIPT_PATTERN.matcher(input).replaceAll("");
         cleaned = HTML_TAG_PATTERN.matcher(cleaned).replaceAll("");
