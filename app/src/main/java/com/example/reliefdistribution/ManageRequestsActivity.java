@@ -6,9 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,6 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.reliefdistribution.data.ai.ReliefTriageAdvisor;
+import com.example.reliefdistribution.databinding.ActivityManageRequestsBinding;
+import com.example.reliefdistribution.databinding.ItemReliefRequestBinding;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -29,17 +29,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+/**
+ * Activity for distributors to triage, accept, track, and complete survivor relief requests.
+ * Modernized in Phase 10.1 with ViewBinding, AI triage assessment, and distributor assignment tracking.
+ */
 public class ManageRequestsActivity extends AppCompatActivity {
 
-    private RecyclerView rvRequests;
-    private ProgressBar progressBar;
-    private TextView tvEmptyState;
-    private ImageButton btnBack;
-    private TabLayout tabLayoutStatus;
-    private TextView tvPendingCount, tvAcceptedCount, tvInProgressCount, tvCompletedCount;
+    private ActivityManageRequestsBinding binding;
 
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
@@ -55,42 +56,32 @@ public class ManageRequestsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_manage_requests);
+        binding = ActivityManageRequestsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("ReliefRequests");
-        currentUserId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "";
+        currentUserId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "Distributor";
 
-        initViews();
         setupTabs();
         setupRecyclerView();
         setupClickListeners();
         loadRequests();
     }
 
-    private void initViews() {
-        rvRequests = findViewById(R.id.rvRequests);
-        progressBar = findViewById(R.id.progressBar);
-        tvEmptyState = findViewById(R.id.tvEmptyState);
-        btnBack = findViewById(R.id.btnBack);
-        tabLayoutStatus = findViewById(R.id.tabLayoutStatus);
-        tvPendingCount = findViewById(R.id.tvPendingCount);
-        tvAcceptedCount = findViewById(R.id.tvAcceptedCount);
-        tvInProgressCount = findViewById(R.id.tvInProgressCount);
-        tvCompletedCount = findViewById(R.id.tvCompletedCount);
-    }
-
     private void setupTabs() {
         for (String status : statusFilters) {
-            TabLayout.Tab tab = tabLayoutStatus.newTab().setText(status);
-            tabLayoutStatus.addTab(tab);
+            TabLayout.Tab tab = binding.tabLayoutStatus.newTab().setText(status);
+            binding.tabLayoutStatus.addTab(tab);
         }
 
-        tabLayoutStatus.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        binding.tabLayoutStatus.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                currentStatusFilter = tab.getText().toString();
-                filterRequests();
+                if (tab.getText() != null) {
+                    currentStatusFilter = tab.getText().toString();
+                    filterRequests();
+                }
             }
 
             @Override
@@ -104,24 +95,24 @@ public class ManageRequestsActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         allRequests = new ArrayList<>();
         filteredRequests = new ArrayList<>();
-        adapter = new RequestAdapter(filteredRequests);
-        rvRequests.setLayoutManager(new LinearLayoutManager(this));
-        rvRequests.setHasFixedSize(true);
-        rvRequests.setAdapter(adapter);
+        adapter = new RequestAdapter(filteredRequests, currentUserId, this::updateRequestStatus, this::viewRequestDetails);
+        binding.rvRequests.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvRequests.setHasFixedSize(true);
+        binding.rvRequests.setAdapter(adapter);
     }
 
     private void setupClickListeners() {
-        btnBack.setOnClickListener(v -> finish());
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     private void loadRequests() {
-        progressBar.setVisibility(View.VISIBLE);
-        rvRequests.setVisibility(View.GONE);
-        tvEmptyState.setVisibility(View.GONE);
+        binding.rvRequests.setVisibility(View.GONE);
+        binding.llEmptyState.setVisibility(View.GONE);
 
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (binding == null) return;
                 allRequests.clear();
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     ReliefRequest request = dataSnapshot.getValue(ReliefRequest.class);
@@ -132,23 +123,13 @@ public class ManageRequestsActivity extends AppCompatActivity {
 
                 updateStats();
                 filterRequests();
-
-                progressBar.setVisibility(View.GONE);
-                if (filteredRequests.isEmpty()) {
-                    tvEmptyState.setVisibility(View.VISIBLE);
-                    rvRequests.setVisibility(View.GONE);
-                } else {
-                    rvRequests.setVisibility(View.VISIBLE);
-                    tvEmptyState.setVisibility(View.GONE);
-                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                progressBar.setVisibility(View.GONE);
-                tvEmptyState.setVisibility(View.VISIBLE);
-                tvEmptyState.setText("Failed to load requests: " + error.getMessage());
-                Toast.makeText(ManageRequestsActivity.this, "Failed to load requests", Toast.LENGTH_SHORT).show();
+                if (binding == null) return;
+                binding.llEmptyState.setVisibility(View.VISIBLE);
+                Toast.makeText(ManageRequestsActivity.this, "Failed to load requests: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -157,26 +138,22 @@ public class ManageRequestsActivity extends AppCompatActivity {
         int pending = 0, accepted = 0, inProgress = 0, completed = 0;
 
         for (ReliefRequest request : allRequests) {
-            switch (request.getStatus()) {
-                case ReliefRequest.STATUS_PENDING:
-                    pending++;
-                    break;
-                case ReliefRequest.STATUS_ACCEPTED:
-                    accepted++;
-                    break;
-                case ReliefRequest.STATUS_IN_PROGRESS:
-                    inProgress++;
-                    break;
-                case ReliefRequest.STATUS_COMPLETED:
-                    completed++;
-                    break;
+            String status = request.getStatus();
+            if (ReliefRequest.STATUS_PENDING.equals(status)) {
+                pending++;
+            } else if (ReliefRequest.STATUS_ACCEPTED.equals(status)) {
+                accepted++;
+            } else if (ReliefRequest.STATUS_IN_PROGRESS.equals(status)) {
+                inProgress++;
+            } else if (ReliefRequest.STATUS_COMPLETED.equals(status)) {
+                completed++;
             }
         }
 
-        tvPendingCount.setText(String.valueOf(pending));
-        tvAcceptedCount.setText(String.valueOf(accepted));
-        tvInProgressCount.setText(String.valueOf(inProgress));
-        tvCompletedCount.setText(String.valueOf(completed));
+        binding.tvPendingCount.setText(String.valueOf(pending));
+        binding.tvAcceptedCount.setText(String.valueOf(accepted));
+        binding.tvInProgressCount.setText(String.valueOf(inProgress));
+        binding.tvCompletedCount.setText(String.valueOf(completed));
     }
 
     private void filterRequests() {
@@ -184,9 +161,17 @@ public class ManageRequestsActivity extends AppCompatActivity {
         if ("All".equals(currentStatusFilter)) {
             filteredRequests.addAll(allRequests);
         } else {
-            String statusFilter = currentStatusFilter;
+            String targetStatus;
+            switch (currentStatusFilter) {
+                case "Pending": targetStatus = ReliefRequest.STATUS_PENDING; break;
+                case "Accepted": targetStatus = ReliefRequest.STATUS_ACCEPTED; break;
+                case "In Progress": targetStatus = ReliefRequest.STATUS_IN_PROGRESS; break;
+                case "Completed": targetStatus = ReliefRequest.STATUS_COMPLETED; break;
+                case "Cancelled": targetStatus = ReliefRequest.STATUS_CANCELLED; break;
+                default: targetStatus = currentStatusFilter; break;
+            }
             for (ReliefRequest request : allRequests) {
-                if (statusFilter.equals(request.getStatus())) {
+                if (targetStatus.equalsIgnoreCase(request.getStatus())) {
                     filteredRequests.add(request);
                 }
             }
@@ -198,29 +183,158 @@ public class ManageRequestsActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
 
         if (filteredRequests.isEmpty()) {
-            tvEmptyState.setVisibility(View.VISIBLE);
-            rvRequests.setVisibility(View.GONE);
+            binding.llEmptyState.setVisibility(View.VISIBLE);
+            binding.rvRequests.setVisibility(View.GONE);
         } else {
-            rvRequests.setVisibility(View.VISIBLE);
-            tvEmptyState.setVisibility(View.GONE);
+            binding.rvRequests.setVisibility(View.VISIBLE);
+            binding.llEmptyState.setVisibility(View.GONE);
         }
+    }
+
+    private void updateRequestStatus(ReliefRequest request, String newStatus) {
+        DatabaseReference requestRef = databaseReference.child(request.getRequestId());
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("status", newStatus);
+        updates.put("updatedAt", System.currentTimeMillis());
+
+        if (ReliefRequest.STATUS_ACCEPTED.equals(newStatus)) {
+            updates.put("distributorId", currentUserId);
+            request.setDistributorId(currentUserId);
+        }
+
+        requestRef.updateChildren(updates)
+                .addOnSuccessListener(aVoid -> {
+                    request.setStatus(newStatus);
+                    adapter.notifyDataSetChanged();
+                    Toast.makeText(this, "Status updated to " + newStatus, Toast.LENGTH_SHORT).show();
+                    createNotification(request, newStatus);
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to update status: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void createNotification(ReliefRequest request, String newStatus) {
+        if (request.getSurvivorId() == null || request.getSurvivorId().isEmpty()) return;
+
+        DatabaseReference notifRef = FirebaseDatabase.getInstance()
+                .getReference("Notifications")
+                .child(request.getSurvivorId())
+                .push();
+
+        String type;
+        String title;
+        String message;
+
+        switch (newStatus) {
+            case ReliefRequest.STATUS_ACCEPTED:
+                type = "REQUEST_ACCEPTED";
+                title = "Request Accepted";
+                message = "Your request for " + request.getItemName() + " has been accepted by distributor " + currentUserId;
+                break;
+            case ReliefRequest.STATUS_IN_PROGRESS:
+                type = "REQUEST_IN_PROGRESS";
+                title = "Delivery In Progress";
+                message = "Your relief supplies (" + request.getItemName() + ") are out for delivery";
+                break;
+            case ReliefRequest.STATUS_COMPLETED:
+                type = "REQUEST_COMPLETED";
+                title = "Delivery Completed";
+                message = "Your request for " + request.getItemName() + " has been fulfilled";
+                break;
+            default:
+                type = "REQUEST_UPDATE";
+                title = "Request Update";
+                message = "Your relief request status is now " + newStatus;
+                break;
+        }
+
+        Notification notification = new Notification();
+        notification.setNotificationId(notifRef.getKey());
+        notification.setUserId(request.getSurvivorId());
+        notification.setType(type);
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setTimestamp(System.currentTimeMillis());
+        notification.setRead(false);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("requestId", request.getRequestId());
+        data.put("type", type);
+        notification.setData(data);
+
+        notifRef.setValue(notification.toMap());
+    }
+
+    private void viewRequestDetails(ReliefRequest request) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Item: ").append(request.getItemName()).append("\n");
+        sb.append("Category: ").append(request.getCategory() != null ? request.getCategory() : "General").append("\n");
+        sb.append("Quantity: ").append(request.getQuantity()).append(" ").append(request.getUnit() != null ? request.getUnit() : "units").append("\n");
+        sb.append("Status: ").append(request.getStatus()).append("\n");
+        sb.append("Priority: ").append(request.getPriority()).append("\n");
+        if (request.getAiPriorityTier() != null) {
+            sb.append("AI Urgency Score: ").append(request.getAiUrgencyScore()).append(" (Tier: ").append(request.getAiPriorityTier()).append(")\n");
+        }
+        if (request.getLocationAddress() != null && !request.getLocationAddress().isEmpty()) {
+            sb.append("Address: ").append(request.getLocationAddress()).append("\n");
+        }
+        if (request.getNotes() != null && !request.getNotes().isEmpty()) {
+            sb.append("Notes: ").append(request.getNotes()).append("\n");
+        }
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this)
+                .setTitle("Relief Request Details")
+                .setMessage(sb.toString())
+                .setPositiveButton("Close", null);
+
+        if (request.getLatitude() != 0 && request.getLongitude() != 0) {
+            builder.setNeutralButton("View on Map", (dialog, which) -> {
+                Intent intent = new Intent(this, MapActivity.class);
+                intent.putExtra("LATITUDE", request.getLatitude());
+                intent.putExtra("LONGITUDE", request.getLongitude());
+                intent.putExtra("ADDRESS", request.getLocationAddress());
+                intent.putExtra("REQUEST_ID", request.getRequestId());
+                startActivity(intent);
+            });
+        }
+
+        builder.show();
+    }
+
+    interface StatusUpdateListener {
+        void onUpdate(ReliefRequest request, String status);
+    }
+
+    interface DetailsListener {
+        void onDetails(ReliefRequest request);
     }
 
     private static class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHolder> {
 
         private final List<ReliefRequest> requests;
+        private final String currentUserId;
+        private final StatusUpdateListener statusListener;
+        private final DetailsListener detailsListener;
         private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
+        private final ReliefTriageAdvisor triageAdvisor = new ReliefTriageAdvisor();
 
-        RequestAdapter(List<ReliefRequest> requests) {
+        RequestAdapter(List<ReliefRequest> requests,
+                       String currentUserId,
+                       StatusUpdateListener statusListener,
+                       DetailsListener detailsListener) {
             this.requests = requests;
+            this.currentUserId = currentUserId;
+            this.statusListener = statusListener;
+            this.detailsListener = detailsListener;
         }
 
         @NonNull
         @Override
         public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_relief_request, parent, false);
-            return new RequestViewHolder(view);
+            ItemReliefRequestBinding itemBinding = ItemReliefRequestBinding.inflate(
+                    LayoutInflater.from(parent.getContext()), parent, false);
+            return new RequestViewHolder(itemBinding);
         }
 
         @Override
@@ -235,34 +349,20 @@ public class ManageRequestsActivity extends AppCompatActivity {
         }
 
         class RequestViewHolder extends RecyclerView.ViewHolder {
-            TextView tvStatus, tvItemName, tvQuantity, tvPriority, tvDate, tvDistributor, tvAddress, tvNotes;
-            View statusBadge;
-            View btnAccept, btnStartDelivery, btnComplete, btnViewMap;
+            private final ItemReliefRequestBinding itemBinding;
 
-            RequestViewHolder(@NonNull View itemView) {
-                super(itemView);
-                tvStatus = itemView.findViewById(R.id.tvStatus);
-                tvItemName = itemView.findViewById(R.id.tvItemName);
-                tvQuantity = itemView.findViewById(R.id.tvQuantity);
-                tvPriority = itemView.findViewById(R.id.tvPriority);
-                tvDate = itemView.findViewById(R.id.tvDate);
-                tvDistributor = itemView.findViewById(R.id.tvDistributor);
-                tvAddress = itemView.findViewById(R.id.tvAddress);
-                tvNotes = itemView.findViewById(R.id.tvNotes);
-                statusBadge = itemView.findViewById(R.id.statusBadge);
-                btnAccept = itemView.findViewById(R.id.btnAccept);
-                btnStartDelivery = itemView.findViewById(R.id.btnStartDelivery);
-                btnComplete = itemView.findViewById(R.id.btnComplete);
-                btnViewMap = itemView.findViewById(R.id.btnViewMap);
+            RequestViewHolder(@NonNull ItemReliefRequestBinding itemBinding) {
+                super(itemBinding.getRoot());
+                this.itemBinding = itemBinding;
             }
 
-            private final ReliefTriageAdvisor triageAdvisor = new ReliefTriageAdvisor();
-
             void bind(ReliefRequest request) {
-                tvItemName.setText(request.getItemName());
-                tvQuantity.setText(String.format(Locale.getDefault(), "Qty: %d %s", request.getQuantity(), request.getUnit()));
-                
-                // Production AI Triage Evaluation
+                itemBinding.tvItemName.setText(request.getItemName());
+                itemBinding.tvCategory.setText(request.getCategory() != null ? request.getCategory() : "Food");
+                itemBinding.tvQuantity.setText(String.format(Locale.getDefault(), "Qty: %d %s",
+                        request.getQuantity(), request.getUnit() != null ? request.getUnit() : ""));
+
+                // Evaluate AI triage priority
                 ReliefTriageAdvisor.TriageAssessment assessment = triageAdvisor.evaluate(
                         request.getCategory(),
                         request.getItemName(),
@@ -270,51 +370,59 @@ public class ManageRequestsActivity extends AppCompatActivity {
                         request.getNotes(),
                         request.getTimestamp()
                 );
-                tvPriority.setText(String.format(Locale.getDefault(), "Priority: %s (AI Score: %d)", 
+                itemBinding.tvPriority.setText(String.format(Locale.getDefault(), "Priority: %s (AI Score: %d)",
                         assessment.getPriorityTier(), assessment.getUrgencyScore()));
-                tvDate.setText("Requested: " + dateFormat.format(new Date(request.getTimestamp())));
+                itemBinding.tvDate.setText("Requested: " + dateFormat.format(new Date(request.getTimestamp())));
 
                 String status = request.getStatus();
-                tvStatus.setText(status);
+                itemBinding.tvStatus.setText(status != null ? status : ReliefRequest.STATUS_PENDING);
 
-                // Set status badge color
                 int badgeColor;
-                switch (status) {
-                    case ReliefRequest.STATUS_PENDING:
-                        badgeColor = 0xFFFF9800; // Orange
-                        break;
-                    case ReliefRequest.STATUS_ACCEPTED:
-                        badgeColor = 0xFF2196F3; // Blue
-                        break;
-                    case ReliefRequest.STATUS_IN_PROGRESS:
-                        badgeColor = 0xFF9C27B0; // Purple
-                        break;
-                    case ReliefRequest.STATUS_COMPLETED:
-                        badgeColor = 0xFF4CAF50; // Green
-                        break;
-                    case ReliefRequest.STATUS_CANCELLED:
-                        badgeColor = 0xFFF44336; // Red
-                        break;
-                    default:
-                        badgeColor = 0xFF9E9E9E; // Gray
+                if (ReliefRequest.STATUS_PENDING.equals(status)) {
+                    badgeColor = 0xFFFF9800; // Orange
+                } else if (ReliefRequest.STATUS_ACCEPTED.equals(status)) {
+                    badgeColor = 0xFF2196F3; // Blue
+                } else if (ReliefRequest.STATUS_IN_PROGRESS.equals(status)) {
+                    badgeColor = 0xFF9C27B0; // Purple
+                } else if (ReliefRequest.STATUS_COMPLETED.equals(status)) {
+                    badgeColor = 0xFF4CAF50; // Green
+                } else if (ReliefRequest.STATUS_CANCELLED.equals(status)) {
+                    badgeColor = 0xFFF44336; // Red
+                } else {
+                    badgeColor = 0xFF9E9E9E; // Gray
                 }
-                statusBadge.setBackgroundColor(badgeColor);
+                itemBinding.statusBadge.setBackgroundColor(badgeColor);
 
                 if (request.getDistributorId() != null && !request.getDistributorId().isEmpty()) {
-                    tvDistributor.setText("Distributor: " + request.getDistributorId());
-                    tvDistributor.setVisibility(View.VISIBLE);
+                    itemBinding.tvDistributor.setText("Distributor: " + request.getDistributorId());
+                    itemBinding.tvDistributor.setVisibility(View.VISIBLE);
                 } else {
-                    tvDistributor.setVisibility(View.GONE);
+                    itemBinding.tvDistributor.setText("Unassigned");
+                    itemBinding.tvDistributor.setVisibility(View.VISIBLE);
                 }
 
-                tvAddress.setText("Location: " + request.getLocationAddress());
+                if (request.getLocationAddress() != null && !request.getLocationAddress().isEmpty()) {
+                    itemBinding.tvAddress.setText("Location: " + request.getLocationAddress());
+                    itemBinding.tvAddress.setVisibility(View.VISIBLE);
+                } else {
+                    itemBinding.tvAddress.setVisibility(View.GONE);
+                }
 
                 if (request.getNotes() != null && !request.getNotes().isEmpty()) {
-                    tvNotes.setText("Notes: " + request.getNotes());
-                    tvNotes.setVisibility(View.VISIBLE);
+                    itemBinding.tvNotes.setText("Notes: " + request.getNotes());
+                    itemBinding.tvNotes.setVisibility(View.VISIBLE);
                 } else {
-                    tvNotes.setVisibility(View.GONE);
+                    itemBinding.tvNotes.setVisibility(View.GONE);
                 }
+
+                // Details button
+                itemBinding.btnViewDetails.setVisibility(View.VISIBLE);
+                itemBinding.btnViewDetails.setOnClickListener(v -> {
+                    if (detailsListener != null) detailsListener.onDetails(request);
+                });
+
+                // Cancel button hidden for distributor view
+                itemBinding.btnCancelRequest.setVisibility(View.GONE);
 
                 // Setup action buttons based on status
                 setupActionButtons(request);
@@ -323,41 +431,34 @@ public class ManageRequestsActivity extends AppCompatActivity {
             private void setupActionButtons(ReliefRequest request) {
                 String status = request.getStatus();
 
-                // Hide all buttons first
-                btnAccept.setVisibility(View.GONE);
-                btnStartDelivery.setVisibility(View.GONE);
-                btnComplete.setVisibility(View.GONE);
-                btnViewMap.setVisibility(View.GONE);
+                itemBinding.btnAccept.setVisibility(View.GONE);
+                itemBinding.btnStartDelivery.setVisibility(View.GONE);
+                itemBinding.btnComplete.setVisibility(View.GONE);
+                itemBinding.btnViewMap.setVisibility(View.GONE);
 
                 if (ReliefRequest.STATUS_PENDING.equals(status)) {
-                    btnAccept.setVisibility(View.VISIBLE);
-                    btnAccept.setOnClickListener(v -> acceptRequest(request));
+                    itemBinding.btnAccept.setVisibility(View.VISIBLE);
+                    itemBinding.btnAccept.setOnClickListener(v -> {
+                        if (statusListener != null) statusListener.onUpdate(request, ReliefRequest.STATUS_ACCEPTED);
+                    });
                 } else if (ReliefRequest.STATUS_ACCEPTED.equals(status)) {
-                    btnStartDelivery.setVisibility(View.VISIBLE);
-                    btnStartDelivery.setOnClickListener(v -> startDelivery(request));
-                    btnViewMap.setVisibility(View.VISIBLE);
-                    btnViewMap.setOnClickListener(v -> viewOnMap(request));
+                    itemBinding.btnStartDelivery.setVisibility(View.VISIBLE);
+                    itemBinding.btnStartDelivery.setOnClickListener(v -> {
+                        if (statusListener != null) statusListener.onUpdate(request, ReliefRequest.STATUS_IN_PROGRESS);
+                    });
+                    itemBinding.btnViewMap.setVisibility(View.VISIBLE);
+                    itemBinding.btnViewMap.setOnClickListener(v -> viewOnMap(request));
                 } else if (ReliefRequest.STATUS_IN_PROGRESS.equals(status)) {
-                    btnComplete.setVisibility(View.VISIBLE);
-                    btnComplete.setOnClickListener(v -> completeRequest(request));
-                    btnViewMap.setVisibility(View.VISIBLE);
-                    btnViewMap.setOnClickListener(v -> viewOnMap(request));
+                    itemBinding.btnComplete.setVisibility(View.VISIBLE);
+                    itemBinding.btnComplete.setOnClickListener(v -> {
+                        if (statusListener != null) statusListener.onUpdate(request, ReliefRequest.STATUS_COMPLETED);
+                    });
+                    itemBinding.btnViewMap.setVisibility(View.VISIBLE);
+                    itemBinding.btnViewMap.setOnClickListener(v -> viewOnMap(request));
                 } else if (ReliefRequest.STATUS_COMPLETED.equals(status)) {
-                    btnViewMap.setVisibility(View.VISIBLE);
-                    btnViewMap.setOnClickListener(v -> viewOnMap(request));
+                    itemBinding.btnViewMap.setVisibility(View.VISIBLE);
+                    itemBinding.btnViewMap.setOnClickListener(v -> viewOnMap(request));
                 }
-            }
-
-            private void acceptRequest(ReliefRequest request) {
-                updateRequestStatus(request, ReliefRequest.STATUS_ACCEPTED);
-            }
-
-            private void startDelivery(ReliefRequest request) {
-                updateRequestStatus(request, ReliefRequest.STATUS_IN_PROGRESS);
-            }
-
-            private void completeRequest(ReliefRequest request) {
-                updateRequestStatus(request, ReliefRequest.STATUS_COMPLETED);
             }
 
             private void viewOnMap(ReliefRequest request) {
@@ -384,72 +485,12 @@ public class ManageRequestsActivity extends AppCompatActivity {
                     Toast.makeText(itemView.getContext(), "Location not available", Toast.LENGTH_SHORT).show();
                 }
             }
-
-            private void updateRequestStatus(ReliefRequest request, String newStatus) {
-                DatabaseReference requestRef = FirebaseDatabase.getInstance()
-                        .getReference("ReliefRequests")
-                        .child(request.getRequestId());
-
-                requestRef.child("status").setValue(newStatus)
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(itemView.getContext(), "Status updated to " + newStatus, Toast.LENGTH_SHORT).show();
-                            // Create notification for survivor
-                            createNotification(request, newStatus);
-                        })
-                        .addOnFailureListener(e -> {
-                            Toast.makeText(itemView.getContext(), "Failed to update status", Toast.LENGTH_SHORT).show();
-                        });
-            }
-
-            private void createNotification(ReliefRequest request, String newStatus) {
-                DatabaseReference notifRef = FirebaseDatabase.getInstance()
-                        .getReference("Notifications")
-                        .child(request.getSurvivorId())
-                        .push();
-
-                String type;
-                String title;
-                String message;
-
-                switch (newStatus) {
-                    case ReliefRequest.STATUS_ACCEPTED:
-                        type = "REQUEST_ACCEPTED";
-                        title = "Request Accepted";
-                        message = "Your request for " + request.getItemName() + " has been accepted by a distributor";
-                        break;
-                    case ReliefRequest.STATUS_IN_PROGRESS:
-                        type = "REQUEST_IN_PROGRESS";
-                        title = "Delivery Started";
-                        message = "Your request for " + request.getItemName() + " is now out for delivery";
-                        break;
-                    case ReliefRequest.STATUS_COMPLETED:
-                        type = "REQUEST_COMPLETED";
-                        title = "Delivery Completed";
-                        message = "Your request for " + request.getItemName() + " has been delivered";
-                        break;
-                    default:
-                        type = "REQUEST_UPDATE";
-                        title = "Request Update";
-                        message = "Your request status has been updated to " + newStatus;
-                }
-
-                Notification notification = new Notification();
-                notification.setNotificationId(notifRef.getKey());
-                notification.setUserId(request.getSurvivorId());
-                notification.setType(type);
-                notification.setTitle(title);
-                notification.setMessage(message);
-                notification.setTimestamp(System.currentTimeMillis());
-                notification.setRead(false);
-
-                // Add data for deep linking
-                java.util.Map<String, Object> data = new java.util.HashMap<>();
-                data.put("requestId", request.getRequestId());
-                data.put("type", type);
-                notification.setData(data);
-
-                notifRef.setValue(notification.toMap());
-            }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null;
     }
 }

@@ -46,49 +46,13 @@ public class GoogleMap extends AppCompatActivity implements OnMapReadyCallback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_google_map);
-
-        ivHomeIcon = findViewById(R.id.ivHomeIcon);
-        ivProfileIcon = findViewById(R.id.ivProfileIcon);
-
-        ivHomeIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                stopLocationUpdates();
-                startActivity(new Intent(GoogleMap.this, DistributorDashboard.class));
-                finish();
-            }
-        });
-        ivProfileIcon.setOnClickListener(view -> {
-            Intent intent = new Intent(GoogleMap.this, Profile.class);
-            startActivity(intent);
-        });
-
-        Intent intent = getIntent();
-        isDistributeModeOn = intent.getBooleanExtra("distributeMode", false);
-
-        SharedPreferences preferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-        userId = preferences.getString("registeredUserId", null);
-        email = preferences.getString("registeredEmail", null);
-
-        if (userId == null) {
-            Toast.makeText(this, "User data not found. Please log in again.", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
+        // Delegate immediately to hardened MapActivity preserving extras
+        Intent forwardIntent = new Intent(this, MapActivity.class);
+        if (getIntent() != null && getIntent().getExtras() != null) {
+            forwardIntent.putExtras(getIntent().getExtras());
         }
-
-        databaseReference = FirebaseDatabase.getInstance().getReference("Users");
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        } else {
-            Log.e("GoogleMap", "Map fragment is null!");
-        }
-
-        toggleDistributeMode(isDistributeModeOn);
+        startActivity(forwardIntent);
+        finish();
     }
 
     @Override

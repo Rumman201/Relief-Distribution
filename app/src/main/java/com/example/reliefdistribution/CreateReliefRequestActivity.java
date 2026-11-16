@@ -4,36 +4,28 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.reliefdistribution.data.ai.ReliefTriageAdvisor;
 import com.example.reliefdistribution.data.util.SecuritySanitizer;
+import com.example.reliefdistribution.databinding.ActivityCreateReliefRequestBinding;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Activity for survivors to request emergency relief supplies.
+ * Modernized in Phase 10.1 with ViewBinding, input sanitization, and MapActivity integration.
+ */
 public class CreateReliefRequestActivity extends AppCompatActivity {
 
-    private AutoCompleteTextView actvCategory, actvPriority;
-    private TextInputLayout tilItemName, tilQuantity, tilUnit, tilLocation, tilNotes;
-    private EditText etItemName, etQuantity, etUnit, etLocation, etNotes;
-    private Button btnSelectLocation, btnSubmit;
-    private ImageButton btnBack;
+    private ActivityCreateReliefRequestBinding binding;
 
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
@@ -49,133 +41,107 @@ public class CreateReliefRequestActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_relief_request);
+        binding = ActivityCreateReliefRequestBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("ReliefRequests");
         currentUserId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "";
 
-        initViews();
         setupAdapters();
         setupClickListeners();
-    }
-
-    private void initViews() {
-        actvCategory = findViewById(R.id.actvCategory);
-        actvPriority = findViewById(R.id.actvPriority);
-        tilItemName = findViewById(R.id.tilItemName);
-        tilQuantity = findViewById(R.id.tilQuantity);
-        tilUnit = findViewById(R.id.tilUnit);
-        tilLocation = findViewById(R.id.tilLocation);
-        tilNotes = findViewById(R.id.tilNotes);
-        etItemName = findViewById(R.id.etItemName);
-        etQuantity = findViewById(R.id.etQuantity);
-        etUnit = findViewById(R.id.etUnit);
-        etLocation = findViewById(R.id.etLocation);
-        etNotes = findViewById(R.id.etNotes);
-        btnSelectLocation = findViewById(R.id.btnSelectLocation);
-        btnSubmit = findViewById(R.id.btnSubmit);
-        btnBack = findViewById(R.id.btnBack);
     }
 
     private void setupAdapters() {
         ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, categories);
-        actvCategory.setAdapter(categoryAdapter);
+        binding.actvCategory.setAdapter(categoryAdapter);
 
         ArrayAdapter<String> priorityAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, priorities);
-        actvPriority.setAdapter(priorityAdapter);
+        binding.actvPriority.setAdapter(priorityAdapter);
 
-        actvCategory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                actvCategory.setError(null);
-            }
-        });
+        binding.actvCategory.setOnItemClickListener((parent, view, position, id) ->
+                binding.actvCategory.setError(null));
 
-        actvPriority.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                actvPriority.setError(null);
-            }
-        });
+        binding.actvPriority.setOnItemClickListener((parent, view, position, id) ->
+                binding.actvPriority.setError(null));
     }
 
     private void setupClickListeners() {
-        btnBack.setOnClickListener(v -> finish());
+        binding.btnBack.setOnClickListener(v -> finish());
 
-        btnSelectLocation.setOnClickListener(v -> {
-            Intent intent = new Intent(this, GoogleMap.class);
+        binding.btnSelectLocation.setOnClickListener(v -> {
+            Intent intent = new Intent(this, MapActivity.class);
             intent.putExtra("PICK_LOCATION", true);
             startActivityForResult(intent, LOCATION_PICKER_REQUEST);
         });
 
-        btnSubmit.setOnClickListener(v -> validateAndSubmit());
+        binding.btnSubmit.setOnClickListener(v -> validateAndSubmit());
     }
 
     private void validateAndSubmit() {
-        String category = actvCategory.getText().toString().trim();
-        String priority = actvPriority.getText().toString().trim();
-        String itemName = etItemName.getText().toString().trim();
-        String quantityStr = etQuantity.getText().toString().trim();
-        String unit = etUnit.getText().toString().trim();
-        String location = etLocation.getText().toString().trim();
-        String notes = etNotes.getText().toString().trim();
+        String category = binding.actvCategory.getText().toString().trim();
+        String priority = binding.actvPriority.getText().toString().trim();
+        String itemName = binding.etItemName.getText() != null ? binding.etItemName.getText().toString().trim() : "";
+        String quantityStr = binding.etQuantity.getText() != null ? binding.etQuantity.getText().toString().trim() : "";
+        String unit = binding.etUnit.getText() != null ? binding.etUnit.getText().toString().trim() : "";
+        String location = binding.etLocation.getText() != null ? binding.etLocation.getText().toString().trim() : "";
+        String notes = binding.etNotes.getText() != null ? binding.etNotes.getText().toString().trim() : "";
 
         boolean isValid = true;
 
         if (TextUtils.isEmpty(category)) {
-            actvCategory.setError("Please select a category");
+            binding.actvCategory.setError("Please select a category");
             isValid = false;
         } else {
-            actvCategory.setError(null);
+            binding.actvCategory.setError(null);
         }
 
         if (TextUtils.isEmpty(priority)) {
-            actvPriority.setError("Please select a priority");
+            binding.actvPriority.setError("Please select a priority");
             isValid = false;
         } else {
-            actvPriority.setError(null);
+            binding.actvPriority.setError(null);
         }
 
         if (TextUtils.isEmpty(itemName)) {
-            tilItemName.setError("Item name is required");
+            binding.tilItemName.setError("Item name is required");
             isValid = false;
         } else {
-            tilItemName.setError(null);
+            binding.tilItemName.setError(null);
         }
 
         if (TextUtils.isEmpty(quantityStr)) {
-            tilQuantity.setError("Quantity is required");
+            binding.tilQuantity.setError("Quantity is required");
             isValid = false;
         } else {
             try {
                 int quantity = Integer.parseInt(quantityStr);
                 if (quantity <= 0) {
-                    tilQuantity.setError("Quantity must be greater than 0");
+                    binding.tilQuantity.setError("Quantity must be greater than 0");
                     isValid = false;
                 } else {
-                    tilQuantity.setError(null);
+                    binding.tilQuantity.setError(null);
                 }
             } catch (NumberFormatException e) {
-                tilQuantity.setError("Invalid quantity");
+                binding.tilQuantity.setError("Invalid quantity");
                 isValid = false;
             }
         }
 
         if (TextUtils.isEmpty(unit)) {
-            tilUnit.setError("Unit is required");
+            binding.tilUnit.setError("Unit is required");
             isValid = false;
         } else {
-            tilUnit.setError(null);
+            binding.tilUnit.setError(null);
         }
 
         if (TextUtils.isEmpty(location) && selectedLocation == null) {
-            tilLocation.setError("Please select a location");
+            binding.tilLocation.setError("Please select a location");
             isValid = false;
         } else {
-            tilLocation.setError(null);
+            binding.tilLocation.setError(null);
         }
 
         if (!isValid) {
@@ -195,12 +161,12 @@ public class CreateReliefRequestActivity extends AppCompatActivity {
         String sanitizedLocation = SecuritySanitizer.sanitizeInput(rawLocation, 256);
 
         if (!SecuritySanitizer.isValidQuantity(quantity)) {
-            tilQuantity.setError("Quantity must be between 1 and 10,000");
+            binding.tilQuantity.setError("Quantity must be between 1 and 10,000");
             return;
         }
 
-        btnSubmit.setEnabled(false);
-        btnSubmit.setText("Submitting...");
+        binding.btnSubmit.setEnabled(false);
+        binding.btnSubmit.setText("Submitting...");
 
         String requestId = databaseReference.push().getKey();
         if (requestId == null) {
@@ -235,16 +201,21 @@ public class CreateReliefRequestActivity extends AppCompatActivity {
             request.setLongitude(selectedLocation.longitude);
         }
 
+        binding.btnSubmit.setEnabled(false);
         databaseReference.child(requestId).setValue(request.toMap())
                 .addOnSuccessListener(aVoid -> {
-                    btnSubmit.setEnabled(true);
-                    btnSubmit.setText("Submit Request");
+                    if (binding != null) {
+                        binding.btnSubmit.setEnabled(true);
+                        binding.btnSubmit.setText("Submit Request");
+                    }
                     Toast.makeText(this, "Relief request submitted successfully!", Toast.LENGTH_LONG).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    btnSubmit.setEnabled(true);
-                    btnSubmit.setText("Submit Request");
+                    if (binding != null) {
+                        binding.btnSubmit.setEnabled(true);
+                        binding.btnSubmit.setText("Submit Request");
+                    }
                     Toast.makeText(this, "Failed to submit request: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
@@ -260,8 +231,14 @@ public class CreateReliefRequestActivity extends AppCompatActivity {
             selectedLocation = new LatLng(lat, lng);
             selectedAddress = address != null ? address : "";
 
-            etLocation.setText(selectedAddress);
-            tilLocation.setError(null);
+            binding.etLocation.setText(selectedAddress);
+            binding.tilLocation.setError(null);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null;
     }
 }

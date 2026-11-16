@@ -1,14 +1,13 @@
 package com.example.reliefdistribution;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,7 +15,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.example.reliefdistribution.data.util.SecuritySanitizer;
+import com.example.reliefdistribution.databinding.ActivityInventoryManagementBinding;
+import com.example.reliefdistribution.databinding.ItemInventoryBinding;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,18 +31,19 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
+/**
+ * Activity for distributors to inspect depot stock levels, add rations, and reserve emergency supplies.
+ * Modernized in Phase 10.1 with ViewBinding, dynamic inventory replenishment dialogs, and stock editing.
+ */
 public class InventoryManagementActivity extends AppCompatActivity {
 
-    private RecyclerView rvInventory;
-    private ProgressBar progressBar;
-    private TextView tvEmptyState;
-    private FloatingActionButton fabAddItem;
-    private ImageButton btnBack;
-    private ChipGroup chipGroupCategories;
-    private TextView tvTotalItems, tvLowStock, tvOutOfStock;
+    private ActivityInventoryManagementBinding binding;
 
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
@@ -51,37 +55,31 @@ public class InventoryManagementActivity extends AppCompatActivity {
     private String currentFilter = "All";
 
     private final String[] categories = {"All", "Food", "Water", "Medicine", "Clothing", "Shelter", "Hygiene", "Other"};
+    private final String[] itemCategories = {"Food", "Water", "Medicine", "Clothing", "Shelter", "Hygiene", "Other"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_inventory_management);
+        binding = ActivityInventoryManagementBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("Inventory");
-        currentUserId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "";
+        currentUserId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "Distributor";
 
-        initViews();
+        setupToolbar();
         setupCategoryChips();
         setupRecyclerView();
         setupClickListeners();
         loadInventory();
     }
 
-    private void initViews() {
-        rvInventory = findViewById(R.id.rvInventory);
-        progressBar = findViewById(R.id.progressBar);
-        tvEmptyState = findViewById(R.id.tvEmptyState);
-        fabAddItem = findViewById(R.id.fabAddItem);
-        btnBack = findViewById(R.id.btnBack);
-        chipGroupCategories = findViewById(R.id.chipGroupCategories);
-        tvTotalItems = findViewById(R.id.tvTotalItems);
-        tvLowStock = findViewById(R.id.tvLowStockItems);
-        tvOutOfStock = findViewById(R.id.tvOutOfStockItems);
+    private void setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
     }
 
     private void setupCategoryChips() {
-        chipGroupCategories.removeAllViews();
+        binding.chipGroupCategories.removeAllViews();
         for (String category : categories) {
             Chip chip = new Chip(this);
             chip.setText(category);
@@ -93,66 +91,50 @@ public class InventoryManagementActivity extends AppCompatActivity {
                     filterInventory();
                 }
             });
-            chipGroupCategories.addView(chip);
+            binding.chipGroupCategories.addView(chip);
         }
     }
 
     private void setupRecyclerView() {
         inventoryList = new ArrayList<>();
         filteredList = new ArrayList<>();
-        adapter = new InventoryAdapter(filteredList);
-        rvInventory.setLayoutManager(new LinearLayoutManager(this));
-        rvInventory.setHasFixedSize(true);
-        rvInventory.setAdapter(adapter);
+        adapter = new InventoryAdapter(filteredList, this::showEditItemDialog, this::showReserveItemDialog, this::showDeleteItemDialog);
+        binding.rvInventory.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvInventory.setHasFixedSize(true);
+        binding.rvInventory.setAdapter(adapter);
     }
 
     private void setupClickListeners() {
-        btnBack.setOnClickListener(v -> finish());
-
-        fabAddItem.setOnClickListener(v -> {
-            // TODO: Open add/edit inventory item dialog/activity
-            Toast.makeText(this, "Add item feature coming soon", Toast.LENGTH_SHORT).show();
-        });
+        binding.fabAddItem.setOnClickListener(v -> showAddItemDialog());
     }
 
     private void loadInventory() {
-        progressBar.setVisibility(View.VISIBLE);
-        rvInventory.setVisibility(View.GONE);
-        tvEmptyState.setVisibility(View.GONE);
+        binding.rvInventory.setVisibility(View.GONE);
+        binding.llEmptyState.setVisibility(View.GONE);
 
-        databaseReference.orderByChild("distributorId").equalTo(currentUserId)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        inventoryList.clear();
-                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                            InventoryItem item = dataSnapshot.getValue(InventoryItem.class);
-                            if (item != null) {
-                                inventoryList.add(item);
-                            }
-                        }
-
-                        updateStats();
-                        filterInventory();
-
-                        progressBar.setVisibility(View.GONE);
-                        if (filteredList.isEmpty()) {
-                            tvEmptyState.setVisibility(View.VISIBLE);
-                            rvInventory.setVisibility(View.GONE);
-                        } else {
-                            rvInventory.setVisibility(View.VISIBLE);
-                            tvEmptyState.setVisibility(View.GONE);
-                        }
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (binding == null) return;
+                inventoryList.clear();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    InventoryItem item = dataSnapshot.getValue(InventoryItem.class);
+                    if (item != null) {
+                        inventoryList.add(item);
                     }
+                }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        progressBar.setVisibility(View.GONE);
-                        tvEmptyState.setVisibility(View.VISIBLE);
-                        tvEmptyState.setText("Failed to load inventory: " + error.getMessage());
-                        Toast.makeText(InventoryManagementActivity.this, "Failed to load inventory", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                updateStats();
+                filterInventory();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (binding == null) return;
+                binding.llEmptyState.setVisibility(View.VISIBLE);
+                Toast.makeText(InventoryManagementActivity.this, "Failed to load inventory: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateStats() {
@@ -163,14 +145,14 @@ public class InventoryManagementActivity extends AppCompatActivity {
         for (InventoryItem item : inventoryList) {
             if (item.getQuantityAvailable() <= 0) {
                 outOfStock++;
-            } else if (item.getQuantityAvailable() <= 10) { // Low stock threshold
+            } else if (item.getQuantityAvailable() <= 10) {
                 lowStock++;
             }
         }
 
-        tvTotalItems.setText(String.valueOf(total));
-        tvLowStock.setText(String.valueOf(lowStock));
-        tvOutOfStock.setText(String.valueOf(outOfStock));
+        binding.tvTotalItems.setText(String.valueOf(total));
+        binding.tvLowStockItems.setText(String.valueOf(lowStock));
+        binding.tvOutOfStockItems.setText(String.valueOf(outOfStock));
     }
 
     private void filterInventory() {
@@ -179,45 +161,222 @@ public class InventoryManagementActivity extends AppCompatActivity {
             filteredList.addAll(inventoryList);
         } else {
             for (InventoryItem item : inventoryList) {
-                if (currentFilter.equals(item.getCategory())) {
+                if (currentFilter.equalsIgnoreCase(item.getCategory())) {
                     filteredList.add(item);
                 }
             }
         }
 
-        // Sort by category then by name
         Collections.sort(filteredList, (i1, i2) -> {
-            int catCompare = i1.getCategory().compareTo(i2.getCategory());
+            int catCompare = (i1.getCategory() != null ? i1.getCategory() : "").compareTo(i2.getCategory() != null ? i2.getCategory() : "");
             if (catCompare != 0) return catCompare;
-            return i1.getItemName().compareTo(i2.getItemName());
+            return (i1.getItemName() != null ? i1.getItemName() : "").compareTo(i2.getItemName() != null ? i2.getItemName() : "");
         });
 
         adapter.notifyDataSetChanged();
 
         if (filteredList.isEmpty()) {
-            tvEmptyState.setVisibility(View.VISIBLE);
-            rvInventory.setVisibility(View.GONE);
+            binding.llEmptyState.setVisibility(View.VISIBLE);
+            binding.rvInventory.setVisibility(View.GONE);
         } else {
-            rvInventory.setVisibility(View.VISIBLE);
-            tvEmptyState.setVisibility(View.GONE);
+            binding.rvInventory.setVisibility(View.VISIBLE);
+            binding.llEmptyState.setVisibility(View.GONE);
         }
+    }
+
+    private void showAddItemDialog() {
+        android.widget.LinearLayout dialogLayout = new android.widget.LinearLayout(this);
+        dialogLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        dialogLayout.setPadding(48, 24, 48, 24);
+
+        EditText etItemName = new EditText(this);
+        etItemName.setHint("Item Name (e.g., Rice, Water 5L, First Aid)");
+        dialogLayout.addView(etItemName);
+
+        Spinner spCategory = new Spinner(this);
+        ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, itemCategories);
+        spCategory.setAdapter(catAdapter);
+        dialogLayout.addView(spCategory);
+
+        EditText etQty = new EditText(this);
+        etQty.setHint("Quantity Available");
+        etQty.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        dialogLayout.addView(etQty);
+
+        EditText etUnit = new EditText(this);
+        etUnit.setHint("Unit (e.g., kg, liters, boxes)");
+        dialogLayout.addView(etUnit);
+
+        EditText etDepot = new EditText(this);
+        etDepot.setHint("Depot Location (e.g., Warehouse A)");
+        dialogLayout.addView(etDepot);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Add Relief Supplies")
+                .setView(dialogLayout)
+                .setPositiveButton("Add to Stock", (dialog, which) -> {
+                    String rawName = etItemName.getText().toString().trim();
+                    String rawQty = etQty.getText().toString().trim();
+                    String rawUnit = etUnit.getText().toString().trim();
+                    String rawDepot = etDepot.getText().toString().trim();
+                    String category = (String) spCategory.getSelectedItem();
+
+                    if (TextUtils.isEmpty(rawName) || TextUtils.isEmpty(rawQty)) {
+                        Toast.makeText(this, "Item name and quantity are required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int qty;
+                    try {
+                        qty = Integer.parseInt(rawQty);
+                        if (qty <= 0) {
+                            Toast.makeText(this, "Quantity must be greater than zero", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(this, "Invalid quantity", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String sanitizedName = SecuritySanitizer.sanitizeInput(rawName, 100);
+                    String sanitizedUnit = SecuritySanitizer.sanitizeInput(rawUnit.isEmpty() ? "units" : rawUnit, 30);
+                    String sanitizedDepot = SecuritySanitizer.sanitizeInput(rawDepot.isEmpty() ? "Central Depot" : rawDepot, 100);
+
+                    String itemId = databaseReference.push().getKey();
+                    if (itemId == null) itemId = UUID.randomUUID().toString();
+
+                    InventoryItem item = new InventoryItem();
+                    item.setItemId(itemId);
+                    item.setDistributorId(currentUserId);
+                    item.setItemName(sanitizedName);
+                    item.setCategory(category != null ? category : "General");
+                    item.setQuantityAvailable(qty);
+                    item.setQuantityReserved(0);
+                    item.setUnit(sanitizedUnit);
+                    item.setLocation(sanitizedDepot);
+                    item.setUpdatedAt(System.currentTimeMillis());
+
+                    databaseReference.child(itemId).setValue(item.toMap())
+                            .addOnSuccessListener(aVoid ->
+                                    Toast.makeText(this, "Item added to inventory!", Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Failed to add item: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showEditItemDialog(InventoryItem item) {
+        EditText etNewQty = new EditText(this);
+        etNewQty.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etNewQty.setHint("New Available Quantity");
+        etNewQty.setText(String.valueOf(item.getQuantityAvailable()));
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Update Stock: " + item.getItemName())
+                .setMessage("Enter the new available stock quantity:")
+                .setView(etNewQty)
+                .setPositiveButton("Update", (dialog, which) -> {
+                    String str = etNewQty.getText().toString().trim();
+                    if (!TextUtils.isEmpty(str)) {
+                        try {
+                            int newQty = Math.max(0, Integer.parseInt(str));
+                            databaseReference.child(item.getItemId()).child("quantityAvailable").setValue(newQty);
+                            item.setQuantityAvailable(newQty);
+                            adapter.notifyDataSetChanged();
+                            Toast.makeText(this, "Stock updated to " + newQty, Toast.LENGTH_SHORT).show();
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(this, "Invalid number", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showReserveItemDialog(InventoryItem item) {
+        EditText etReserveQty = new EditText(this);
+        etReserveQty.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etReserveQty.setHint("Quantity to Reserve (Max: " + item.getQuantityAvailable() + ")");
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Reserve Stock: " + item.getItemName())
+                .setMessage("Current available: " + item.getQuantityAvailable() + " " + item.getUnit())
+                .setView(etReserveQty)
+                .setPositiveButton("Reserve", (dialog, which) -> {
+                    String str = etReserveQty.getText().toString().trim();
+                    if (!TextUtils.isEmpty(str)) {
+                        try {
+                            int reserveCount = Integer.parseInt(str);
+                            if (reserveCount <= 0 || reserveCount > item.getQuantityAvailable()) {
+                                Toast.makeText(this, "Cannot reserve more than available stock", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            int newAvail = item.getQuantityAvailable() - reserveCount;
+                            int newRes = item.getQuantityReserved() + reserveCount;
+
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("quantityAvailable", newAvail);
+                            map.put("quantityReserved", newRes);
+                            map.put("updatedAt", System.currentTimeMillis());
+
+                            databaseReference.child(item.getItemId()).updateChildren(map);
+                            item.setQuantityAvailable(newAvail);
+                            item.setQuantityReserved(newRes);
+                            adapter.notifyDataSetChanged();
+                            Toast.makeText(this, "Reserved " + reserveCount + " " + item.getUnit(), Toast.LENGTH_SHORT).show();
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(this, "Invalid number", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showDeleteItemDialog(InventoryItem item) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Inventory Item")
+                .setMessage("Are you sure you want to remove " + item.getItemName() + " from the inventory database?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    databaseReference.child(item.getItemId()).removeValue()
+                            .addOnSuccessListener(aVoid ->
+                                    Toast.makeText(this, "Item removed", Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Failed to delete: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    interface ItemActionListener {
+        void onAction(InventoryItem item);
     }
 
     private static class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.InventoryViewHolder> {
 
         private final List<InventoryItem> items;
+        private final ItemActionListener editListener;
+        private final ItemActionListener reserveListener;
+        private final ItemActionListener deleteListener;
         private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
-        InventoryAdapter(List<InventoryItem> items) {
+        InventoryAdapter(List<InventoryItem> items,
+                         ItemActionListener editListener,
+                         ItemActionListener reserveListener,
+                         ItemActionListener deleteListener) {
             this.items = items;
+            this.editListener = editListener;
+            this.reserveListener = reserveListener;
+            this.deleteListener = deleteListener;
         }
 
         @NonNull
         @Override
         public InventoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_inventory, parent, false);
-            return new InventoryViewHolder(view);
+            ItemInventoryBinding itemBinding = ItemInventoryBinding.inflate(
+                    LayoutInflater.from(parent.getContext()), parent, false);
+            return new InventoryViewHolder(itemBinding);
         }
 
         @Override
@@ -232,68 +391,65 @@ public class InventoryManagementActivity extends AppCompatActivity {
         }
 
         class InventoryViewHolder extends RecyclerView.ViewHolder {
-            TextView tvItemName, tvCategory, tvQuantityAvailable, tvQuantityReserved, tvUnit, tvLocation, tvExpiry, tvStatus;
-            View statusBadge;
+            private final ItemInventoryBinding itemBinding;
 
-            InventoryViewHolder(@NonNull View itemView) {
-                super(itemView);
-                tvItemName = itemView.findViewById(R.id.tvItemName);
-                tvCategory = itemView.findViewById(R.id.tvCategory);
-                tvQuantityAvailable = itemView.findViewById(R.id.tvAvailableQty);
-                tvQuantityReserved = itemView.findViewById(R.id.tvReservedQty);
-                tvUnit = itemView.findViewById(R.id.tvUnit);
-                tvLocation = itemView.findViewById(R.id.tvLocation);
-                tvExpiry = itemView.findViewById(R.id.tvExpiryDate);
-                tvStatus = itemView.findViewById(R.id.tvStockStatus);
-                statusBadge = itemView.findViewById(R.id.tvStockStatus);
+            InventoryViewHolder(@NonNull ItemInventoryBinding itemBinding) {
+                super(itemBinding.getRoot());
+                this.itemBinding = itemBinding;
             }
 
             void bind(InventoryItem item) {
-                tvItemName.setText(item.getItemName());
-                tvCategory.setText(item.getCategory());
-                tvQuantityAvailable.setText(String.format(Locale.getDefault(), "Available: %d", item.getQuantityAvailable()));
-                tvQuantityReserved.setText(String.format(Locale.getDefault(), "Reserved: %d", item.getQuantityReserved()));
-                tvUnit.setText("Unit: " + item.getUnit());
+                itemBinding.tvItemName.setText(item.getItemName());
+                itemBinding.tvCategory.setText(item.getCategory() != null ? item.getCategory() : "General");
+                itemBinding.tvAvailableQty.setText(String.format(Locale.getDefault(), "Available: %d", item.getQuantityAvailable()));
+                itemBinding.tvReservedQty.setText(String.format(Locale.getDefault(), "Reserved: %d", item.getQuantityReserved()));
+                itemBinding.tvUnit.setText("Unit: " + (item.getUnit() != null ? item.getUnit() : ""));
 
                 if (item.getLocation() != null && !item.getLocation().isEmpty()) {
-                    tvLocation.setText("Location: " + item.getLocation());
-                    tvLocation.setVisibility(View.VISIBLE);
+                    itemBinding.tvLocation.setText("Location: " + item.getLocation());
+                    itemBinding.tvLocation.setVisibility(View.VISIBLE);
                 } else {
-                    tvLocation.setVisibility(View.GONE);
+                    itemBinding.tvLocation.setVisibility(View.GONE);
                 }
 
                 if (item.getExpiryDate() > 0) {
-                    tvExpiry.setText("Expires: " + dateFormat.format(new Date(item.getExpiryDate())));
-                    tvExpiry.setVisibility(View.VISIBLE);
+                    itemBinding.tvExpiryDate.setText("Expires: " + dateFormat.format(new Date(item.getExpiryDate())));
+                    itemBinding.tvExpiryDate.setVisibility(View.VISIBLE);
                 } else {
-                    tvExpiry.setVisibility(View.GONE);
+                    itemBinding.tvExpiryDate.setVisibility(View.GONE);
                 }
 
                 String status = item.getStatus();
-                tvStatus.setText(status);
+                itemBinding.tvStockStatus.setText(status != null ? status : InventoryItem.STATUS_IN_STOCK);
 
-                int badgeColor;
                 int bgResId;
-                switch (status) {
-                    case InventoryItem.STATUS_IN_STOCK:
-                        badgeColor = 0xFF4CAF50; // Green
-                        bgResId = R.drawable.bg_status_in_stock;
-                        break;
-                    case InventoryItem.STATUS_LOW_STOCK:
-                        badgeColor = 0xFFFF9800; // Orange
-                        bgResId = R.drawable.bg_status_low_stock;
-                        break;
-                    case InventoryItem.STATUS_OUT_OF_STOCK:
-                        badgeColor = 0xFFF44336; // Red
-                        bgResId = R.drawable.bg_status_out_of_stock;
-                        break;
-                    default:
-                        badgeColor = 0xFF9E9E9E; // Gray
-                        bgResId = R.drawable.bg_status_in_stock;
+                if (InventoryItem.STATUS_OUT_OF_STOCK.equals(status)) {
+                    bgResId = R.drawable.bg_status_out_of_stock;
+                } else if (InventoryItem.STATUS_LOW_STOCK.equals(status)) {
+                    bgResId = R.drawable.bg_status_low_stock;
+                } else {
+                    bgResId = R.drawable.bg_status_in_stock;
                 }
-                statusBadge.setBackgroundColor(badgeColor);
-                statusBadge.setBackgroundResource(bgResId);
+                itemBinding.tvStockStatus.setBackgroundResource(bgResId);
+
+                itemBinding.btnEditItem.setOnClickListener(v -> {
+                    if (editListener != null) editListener.onAction(item);
+                });
+
+                itemBinding.btnReserveItem.setOnClickListener(v -> {
+                    if (reserveListener != null) reserveListener.onAction(item);
+                });
+
+                itemBinding.btnDeleteItem.setOnClickListener(v -> {
+                    if (deleteListener != null) deleteListener.onAction(item);
+                });
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null;
     }
 }

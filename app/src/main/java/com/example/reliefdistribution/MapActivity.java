@@ -78,11 +78,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         Intent intent = getIntent();
         isDistributeModeOn = intent.getBooleanExtra("distributeMode", false);
+        boolean isPickLocation = intent.getBooleanExtra("PICK_LOCATION", false);
         mapViewModel.setDistributeMode(isDistributeModeOn);
 
         // Update tracking status badge
         if (binding.tvTrackingBadge != null) {
-            if (isDistributeModeOn) {
+            if (isPickLocation) {
+                binding.tvTrackingBadge.setText("Tap to Select Point");
+                binding.tvTrackingBadge.setTextColor(getColor(R.color.primary));
+                binding.tvTrackingBadge.setBackgroundResource(R.drawable.badge_role);
+            } else if (isDistributeModeOn) {
                 binding.tvTrackingBadge.setText(R.string.tracking_broadcasting);
                 binding.tvTrackingBadge.setTextColor(getColor(R.color.status_online));
                 binding.tvTrackingBadge.setBackgroundResource(R.drawable.badge_online);
@@ -125,6 +130,34 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         LatLng bangladesh = new LatLng(23.6850, 90.3563);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(bangladesh, 10));
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            boolean isPickLocation = intent.getBooleanExtra("PICK_LOCATION", false);
+            if (isPickLocation) {
+                Toast.makeText(this, "Tap on map to select relief delivery location", Toast.LENGTH_LONG).show();
+                googleMap.setOnMapClickListener(latLng -> {
+                    googleMap.clear();
+                    googleMap.addMarker(new MarkerOptions().position(latLng).title("Selected Relief Location"));
+                    Intent result = new Intent();
+                    result.putExtra("LATITUDE", latLng.latitude);
+                    result.putExtra("LONGITUDE", latLng.longitude);
+                    result.putExtra("ADDRESS", String.format(java.util.Locale.US, "GPS: %.4f, %.4f", latLng.latitude, latLng.longitude));
+                    setResult(RESULT_OK, result);
+                    Toast.makeText(this, "Location Selected", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+            }
+
+            double targetLat = intent.getDoubleExtra("LATITUDE", 0);
+            double targetLng = intent.getDoubleExtra("LONGITUDE", 0);
+            String targetAddress = intent.getStringExtra("ADDRESS");
+            if (targetLat != 0 && targetLng != 0) {
+                LatLng targetDest = new LatLng(targetLat, targetLng);
+                googleMap.addMarker(new MarkerOptions().position(targetDest).title(targetAddress != null ? targetAddress : "Relief Aid Destination"));
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(targetDest, 14f));
+            }
+        }
     }
 
     private void startLocationUpdates() {

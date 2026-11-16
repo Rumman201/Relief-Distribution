@@ -94,5 +94,22 @@ This registry documents all active Antigravity engineering skills created and co
 | `chaos-resilience-verification` | Controlled fault injection, network partition, stress recovery | Verifying failure modes and system recovery | Chaos & Resilience QA | Core skill for Phase 9 |
 | `autonomous-defect-remediation` | Automated bug reproduction, root-cause analysis, minimal fixes | Isolating, patching, and testing defects | Defect Remediation & SRE | Core skill for Phase 9 |
 | `release-candidate-certification` | Release qualification, checksum attestation, Go/No-Go decision | Independent release candidate assessment | Release Certification | Core skill for Phase 9 |
+| `final-system-reconciliation` | Cross-phase findings reconciliation, decision resolution, backlog | Consolidating findings and canonical issues | Chief Software Architecture | Core skill for Phase 10.1 |
+| `principal-full-stack-overhaul` | Cross-layer diagnosis, architecture constraints, data contracts | Deep full-stack system refactoring and integration | Principal Full-Stack Engineering | Core skill for Phase 10.1 |
+| `final-frontend-polish` | Route inspection, visual design-system, responsive polish, UX | Polishing all 12 Android Activity interfaces | Executive Frontend & UX | Core skill for Phase 10.1 |
+| `release-blocker-remediation` | P0/P1 defect verification, root-cause, minimal safe patches | Resolving critical release blockers | Defect Engineering & SRE | Core skill for Phase 10.1 |
+| `cross-system-regression-engineering` | Cross-system automated testing, invariant checks, build verification | Running full-system regression protection | Principal QA Architecture | Core skill for Phase 10.1 |
+| `final-ai-agentic-hardening` | AI triage guardrails, text-bomb containment, temporal skew defense | Hardening disaster AI scoring and automation | Principal AI & Agentic Systems | Core skill for Phase 10.1 |
+| `final-iot-firmware-hardening` | GPS telemetry anti-spoofing, stationary compaction, ring buffer | Hardening mobile edge IoT tracking | Principal IoT & Edge Engineering | Core skill for Phase 10.1 |
+| `final-architecture-and-risk-review` | Clean architecture verification, risk registers, ADR governance | Evaluating technical debt and residual risk | Chief Architecture & Risk | Core skill for Phase 10.1 |
+| `release-candidate-preparation` | Candidate versioning, SHA-256 attestation, scope freeze, handoff | Preparing verified candidate for Phase 10.2 | Principal Release Engineering | Core skill for Phase 10.1 |
+| `independent-release-assessment` | Adversarial quality evaluation, cross-phase verification, release challenge | Independent verification of candidate builds | Independent QA & Certification | Core skill for Phase 10.2 |
+| `immutable-artifact-verification` | Cryptographic digest calculation, binary provenance, immutability | Verifying candidate binary checksums and integrity | Release Provenance & Artifact QA | Core skill for Phase 10.2 |
+| `production-readiness-review` | Production readiness assessment, non-functional requirements | Auditing architecture, scalability, and operations | Production Engineering & SRE | Core skill for Phase 10.2 |
+| `final-security-assurance` | OWASP MASVS compliance, zero-trust invariants, vulnerability defense | Pre-release security qualification and auditing | Cybersecurity & DevSecOps | Core skill for Phase 10.2 |
+| `final-reliability-certification` | Resilience validation, offline mode auditing, chaos fault recovery | Certifying reliability under extreme stress | Reliability Engineering | Core skill for Phase 10.2 |
+| `release-gate-governance` | Formal quality gate evaluation, release blocker tracking, Go/No-Go | Adjudicating the 30 Master Release Gates | Release Governance & Quality | Core skill for Phase 10.2 |
+| `operational-handoff-engineering` | Operational readiness transfer, deployment runbooks, alert playbooks | Formulating operational handoff and deployment | DevOps & Site Reliability | Core skill for Phase 10.2 |
+| `final-audit-evidence-packaging` | Audit trail compilation, evidence package indexing, RTM reconciliation | Assembling the regulatory engineering audit dossier | Compliance & Audit Engineering | Core skill for Phase 10.2 |
 
-All skills reside in `.agents/skills/<skill-name>/SKILL.md` with complete YAML frontmatter and step-by-step engineering protocols. Total registered specialist skills: 90.
+All skills reside in `.agents/skills/<skill-name>/SKILL.md` with complete YAML frontmatter and step-by-step engineering protocols. Total registered specialist skills: 107.

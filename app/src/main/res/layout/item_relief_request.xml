@@ -217,7 +217,7 @@
             <Button
                 android:id="@+id/btnViewDetails"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:layout_weight="5"
                 android:layout_marginEnd="4dp"
                 android:backgroundTint="@color/primary"
@@ -228,7 +228,7 @@
             <Button
                 android:id="@+id/btnCancelRequest"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:layout_weight="5"
                 android:layout_marginStart="4dp"
                 android:backgroundTint="@color/emergency_red"
@@ -240,7 +240,7 @@
             <Button
                 android:id="@+id/btnAccept"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:layout_weight="5"
                 android:layout_marginEnd="4dp"
                 android:backgroundTint="@color/primary"
@@ -252,7 +252,7 @@
             <Button
                 android:id="@+id/btnStartDelivery"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:layout_weight="5"
                 android:layout_marginEnd="4dp"
                 android:backgroundTint="@color/primary"
@@ -264,7 +264,7 @@
             <Button
                 android:id="@+id/btnComplete"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:layout_weight="5"
                 android:layout_marginEnd="4dp"
                 android:backgroundTint="@color/status_online"
@@ -276,7 +276,7 @@
             <Button
                 android:id="@+id/btnViewMap"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:layout_weight="5"
                 android:layout_marginStart="4dp"
                 android:backgroundTint="@color/secondary"

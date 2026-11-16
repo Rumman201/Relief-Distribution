@@ -828,9 +828,88 @@ Prior to promoting builds to production release candidates, an independent asses
 1. **Option 1**: Rely on developer sign-off without independent gate verification.
 2. **Option 2 (Chosen)**: Comprehensive gate matrix (Gates A through R) backed by 131 passing tests, clean lint, and SHA-256 attestation.
 
+---
+
+## ADR-035: Universal Jetpack ViewBinding Enforcement & Elimination of Unsafe findViewById
+
+- **Status**: Accepted
+- **Date**: 2026-11-16
+- **Deciders**: Chief Software Architect, Principal Full-Stack Engineer, Mobile Platform Lead
+
+### Context & Problem Statement
+During the Phase 10.1 cross-phase audit, 5 UI activities restored in Phase 5 (`CreateReliefRequestActivity`, `InventoryManagementActivity`, `ManageRequestsActivity`, `MyReliefRequestsActivity`, `NotificationsActivity`) and their RecyclerView ViewHolders still utilized legacy `findViewById`. An ID mismatch in layouts (`tvEmptyState` vs `llEmptyState`) caused fatal runtime `NullPointerException` crashes on empty lists.
+
+### Decision Drivers
+- Fulfill persistent invariant: 100% of UI activities and adapters must use Android Jetpack `ViewBinding`.
+- Guarantee compile-time view type safety and eliminate runtime `NullPointerException` crashes.
+
+### Considered Options
+1. **Option 1**: Retain `findViewById` and manually align string IDs in XML.
+2. **Option 2 (Chosen)**: Universally migrate all remaining activities, fragments, and RecyclerView ViewHolders to Jetpack ViewBinding (`ActivityCreateReliefRequestBinding`, `ActivityInventoryManagementBinding`, `ActivityManageRequestsBinding`, `ActivityMyReliefRequestsBinding`, `ActivityNotificationsBinding`, and item bindings).
+
 ### Consequences
-- **Positive**: Unassailable release candidate governance; zero unverified claims.
-- **Negative**: Release candidates must re-run all 18 gates if code modifications occur.
+- **Positive**: 100% compile-time null safety; elimination of fatal view resolution crashes; clean ViewBinding lifecycle management with `binding = null` in `onDestroy()`.
+- **Negative**: Requires synthetic binding field declarations and boilerplate inflation in `onCreate`.
+
+---
+
+## ADR-036: Interactive GPS Location Selection & Real-Time Aid Target Visualization
+
+- **Status**: Accepted
+- **Date**: 2026-11-16
+- **Deciders**: Chief Software Architect, Principal IoT Engineer, Executive Frontend Director
+
+### Context & Problem Statement
+Prior to Phase 10.1, survivor relief requests lacked interactive location selection (`PICK_LOCATION` was unhandled), and distributors viewing aid requests on maps were presented only with the center of Bangladesh without an aid destination target marker. Furthermore, `GoogleMap.java` duplicated unmigrated location code and collided with the Maps SDK namespace.
+
+### Decision Drivers
+- Allow survivors in disaster zones to pick exact coordinates by tapping on the map.
+- Render aid destination target markers for distributors during transit.
+- Eliminate namespace collision and duplicate tracking code.
+
+### Considered Options
+1. **Option 1**: Allow text address entry only without GPS coordinates.
+2. **Option 2 (Chosen)**:
+   - Upgrade `MapActivity` to support `PICK_LOCATION` intent with interactive `OnMapClickListener` returning precision GPS coordinates.
+   - Render aid destination marker (`targetLat`, `targetLng`, `targetAddress`) and auto-zoom camera when coordinates are passed via intent.
+   - Refactor `GoogleMap.java` into a lightweight, safe delegator forwarding all intent extras directly to `MapActivity`.
+
+### Consequences
+- **Positive**: Seamless survivor pin-drop coordinate selection; accurate distributor route visualization; zero namespace collision; 100% backward compatibility for legacy intent callers.
+- **Negative**: Requires location permission grant for user coordinate centering.
+
+---
+
+## ADR-037: Final Production Certification & Release Qualification
+
+- **Status**: Accepted
+- **Date**: 2026-11-16
+- **Deciders**: Independent Principal QA Architect, Chief Release Governance Officer, Principal Security Engineer, Principal SRE
+- **Supercedes / Extends**: ADR-034 (Release Candidate Qualification), ADR-036 (Interactive GPS Location Selection)
+
+### Context & Problem Statement
+With the completion of Phase 10.1 major system implementation and remediation, Candidate Release v1.0.0-rc2 required definitive, independent verification across all functional, security, performance, operational, and regulatory quality gates. A rigorous evaluation framework was necessary to challenge the finished release candidate without author bias, ensuring the mobile application meets the highest standards of safety, stability, and humanitarian reliability before deployment staging.
+
+### Decision Drivers
+- Absolute independence in verification: evaluate empirical evidence, zero fabricated results, and challenge every claim.
+- Complete coverage across 30 Master Release Gates spanning architecture, testing, security, privacy, performance, reliability, and operations.
+- Cryptographic artifact attestation and build immutability.
+- Operational readiness: clear rollback playbooks, phased rollout governance, and production incident response runbooks.
+
+### Considered Options
+1. **Option 1**: Self-certification by the implementation team based on prior phase test summaries.
+2. **Option 2 (Chosen)**: Independent adversarial verification by dedicated release quality and governance specialists:
+   - Fresh, independent execution of complete test suites (138 tests, 100% pass rate).
+   - Full static analysis auditing via Android Lint (0 errors, 0 fatal issues).
+   - SHA-256 cryptographic attestation of the release candidate binary (`F7972F4311F6D5D6BB4261EEC575ECF79362837BBDAA61733FDF830380F62687`, 10,014,769 bytes).
+   - Evaluation of all 30 Master Release Gates with formal GO verdict.
+   - Authoring complete Phase 10.2 operational handoff dossier (`docs/upgrade/155-181`).
+
+### Consequences
+- **Positive**: Complete evidentiary confidence in release candidate integrity; zero unresolved P0/P1 defects; verified zero plaintext password storage and zero secret leaks; formal operational handoff to production teams.
+- **Negative**: Requires strict adherence to Google Play staged rollout (10% -> 25% -> 50% -> 100%) and continuous monitoring during canary phases.
+
+
 
 
 

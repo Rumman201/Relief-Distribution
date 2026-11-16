@@ -219,7 +219,7 @@
             <Button
                 android:id="@+id/btnEditItem"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="48dp"
                 android:layout_weight="3"
                 android:layout_marginEnd="4dp"
                 android:backgroundTint="@color/design_default_color_primary"
@@ -230,7 +230,7 @@
             <Button
                 android:id="@+id/btnReserveItem"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="48dp"
                 android:layout_weight="4"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
@@ -242,7 +242,7 @@
             <Button
                 android:id="@+id/btnDeleteItem"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="48dp"
                 android:layout_weight="3"
                 android:layout_marginStart="4dp"
                 android:backgroundTint="@color/design_default_color_error"

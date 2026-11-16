@@ -198,6 +198,14 @@ public class ReliefWorkflowAutomator {
     }
 
     /**
+     * Executes automated cancellation without inventory association.
+     */
+    @NonNull
+    public AutomationResult onRequestCancelled(@NonNull ReliefRequest request) {
+        return onRequestCancelled(request, null);
+    }
+
+    /**
      * Executes automated cancellation and releases reserved inventory back to available pool.
      */
     @NonNull

@@ -4,9 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.reliefdistribution.databinding.ActivityNotificationsBinding;
+import com.example.reliefdistribution.databinding.ItemNotificationBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,12 +27,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Activity for displaying user alerts and dispatch updates.
+ * Modernized in Phase 10.1 with ViewBinding and compile-time null safety.
+ */
 public class NotificationsActivity extends AppCompatActivity {
 
-    private RecyclerView rvNotifications;
-    private ProgressBar progressBar;
-    private TextView tvEmptyState;
-    private ImageButton btnBack;
+    private ActivityNotificationsBinding binding;
 
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
@@ -45,45 +45,39 @@ public class NotificationsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_notifications);
+        binding = ActivityNotificationsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("Notifications");
         currentUserId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "";
 
-        initViews();
         setupRecyclerView();
         setupClickListeners();
         loadNotifications();
     }
 
-    private void initViews() {
-        rvNotifications = findViewById(R.id.rvNotifications);
-        progressBar = findViewById(R.id.progressBar);
-        tvEmptyState = findViewById(R.id.tvEmptyState);
-        btnBack = findViewById(R.id.btnBack);
-    }
-
     private void setupRecyclerView() {
         notifications = new ArrayList<>();
         adapter = new NotificationAdapter(notifications);
-        rvNotifications.setLayoutManager(new LinearLayoutManager(this));
-        rvNotifications.setHasFixedSize(true);
-        rvNotifications.setAdapter(adapter);
+        binding.rvNotifications.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvNotifications.setHasFixedSize(true);
+        binding.rvNotifications.setAdapter(adapter);
     }
 
     private void setupClickListeners() {
-        btnBack.setOnClickListener(v -> finish());
+        binding.btnBack.setOnClickListener(v -> finish());
     }
 
     private void loadNotifications() {
-        progressBar.setVisibility(View.VISIBLE);
-        rvNotifications.setVisibility(View.GONE);
-        tvEmptyState.setVisibility(View.GONE);
+        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.rvNotifications.setVisibility(View.GONE);
+        binding.emptyStateLayout.setVisibility(View.GONE);
 
         databaseReference.child(currentUserId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (binding == null) return;
                 notifications.clear();
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Notification notification = dataSnapshot.getValue(Notification.class);
@@ -92,26 +86,25 @@ public class NotificationsActivity extends AppCompatActivity {
                     }
                 }
 
-                // Sort by timestamp descending (newest first)
                 Collections.sort(notifications, (n1, n2) -> Long.compare(n2.getTimestamp(), n1.getTimestamp()));
-
                 adapter.notifyDataSetChanged();
 
-                progressBar.setVisibility(View.GONE);
+                binding.progressBar.setVisibility(View.GONE);
                 if (notifications.isEmpty()) {
-                    tvEmptyState.setVisibility(View.VISIBLE);
-                    rvNotifications.setVisibility(View.GONE);
+                    binding.emptyStateLayout.setVisibility(View.VISIBLE);
+                    binding.rvNotifications.setVisibility(View.GONE);
                 } else {
-                    rvNotifications.setVisibility(View.VISIBLE);
-                    tvEmptyState.setVisibility(View.GONE);
+                    binding.rvNotifications.setVisibility(View.VISIBLE);
+                    binding.emptyStateLayout.setVisibility(View.GONE);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                progressBar.setVisibility(View.GONE);
-                tvEmptyState.setVisibility(View.VISIBLE);
-                tvEmptyState.setText("Failed to load notifications: " + error.getMessage());
+                if (binding == null) return;
+                binding.progressBar.setVisibility(View.GONE);
+                binding.emptyStateLayout.setVisibility(View.VISIBLE);
+                binding.tvEmptyState.setText("Failed to load notifications: " + error.getMessage());
                 Toast.makeText(NotificationsActivity.this, "Failed to load notifications", Toast.LENGTH_SHORT).show();
             }
         });
@@ -129,9 +122,9 @@ public class NotificationsActivity extends AppCompatActivity {
         @NonNull
         @Override
         public NotificationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_notification, parent, false);
-            return new NotificationViewHolder(view);
+            ItemNotificationBinding itemBinding = ItemNotificationBinding.inflate(
+                    LayoutInflater.from(parent.getContext()), parent, false);
+            return new NotificationViewHolder(itemBinding);
         }
 
         @Override
@@ -146,27 +139,23 @@ public class NotificationsActivity extends AppCompatActivity {
         }
 
         class NotificationViewHolder extends RecyclerView.ViewHolder {
-            TextView tvTitle, tvMessage, tvTime;
-            View unreadIndicator;
+            private final ItemNotificationBinding itemBinding;
 
-            NotificationViewHolder(@NonNull View itemView) {
-                super(itemView);
-                tvTitle = itemView.findViewById(R.id.tvNotificationTitle);
-                tvMessage = itemView.findViewById(R.id.tvNotificationMessage);
-                tvTime = itemView.findViewById(R.id.tvNotificationTime);
-                unreadIndicator = itemView.findViewById(R.id.vUnreadIndicator);
+            NotificationViewHolder(@NonNull ItemNotificationBinding itemBinding) {
+                super(itemBinding.getRoot());
+                this.itemBinding = itemBinding;
             }
 
             void bind(Notification notification) {
-                tvTitle.setText(notification.getTitle());
-                tvMessage.setText(notification.getMessage());
-                tvTime.setText(dateFormat.format(new Date(notification.getTimestamp())));
+                itemBinding.tvNotificationTitle.setText(notification.getTitle());
+                itemBinding.tvNotificationMessage.setText(notification.getMessage());
+                itemBinding.tvNotificationTime.setText(dateFormat.format(new Date(notification.getTimestamp())));
 
                 if (!notification.isRead()) {
-                    unreadIndicator.setVisibility(View.VISIBLE);
+                    itemBinding.vUnreadIndicator.setVisibility(View.VISIBLE);
                     itemView.setBackgroundResource(R.drawable.notification_unread_bg);
                 } else {
-                    unreadIndicator.setVisibility(View.GONE);
+                    itemBinding.vUnreadIndicator.setVisibility(View.GONE);
                     itemView.setBackgroundResource(R.drawable.notification_read_bg);
                 }
 
@@ -187,20 +176,23 @@ public class NotificationsActivity extends AppCompatActivity {
                 notifRef.child("read").setValue(true)
                         .addOnSuccessListener(aVoid -> {
                             notification.setRead(true);
-                            unreadIndicator.setVisibility(View.GONE);
+                            itemBinding.vUnreadIndicator.setVisibility(View.GONE);
                             itemView.setBackgroundResource(R.drawable.notification_read_bg);
                         });
             }
 
             private void handleNotificationClick(Notification notification) {
-                // Handle deep linking based on notification type
-                String type = notification.getType();
                 if (notification.getData() != null && notification.getData().containsKey("requestId")) {
                     String requestId = (String) notification.getData().get("requestId");
-                    // Could navigate to request details
                     Toast.makeText(itemView.getContext(), "Request: " + requestId, Toast.LENGTH_SHORT).show();
                 }
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null;
     }
 }

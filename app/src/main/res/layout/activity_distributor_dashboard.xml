@@ -180,8 +180,8 @@
                     android:padding="@dimen/spacing_m">
 
                     <ImageView
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:contentDescription="@string/tracking_icon_desc"
                         android:src="@drawable/map" />
 
@@ -226,8 +226,8 @@
                     android:padding="@dimen/spacing_m">
 
                     <ImageView
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:contentDescription="@string/features_icon_desc"
                         android:src="@drawable/new_features" />
 
@@ -272,8 +272,8 @@
                     android:padding="@dimen/spacing_m">
 
                     <ImageView
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:contentDescription="@string/settings_icon_desc"
                         android:src="@drawable/settings" />
 

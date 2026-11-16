@@ -156,6 +156,14 @@ public class InventoryItem {
         this.lastUpdated = lastUpdated;
     }
 
+    public long getUpdatedAt() {
+        return lastUpdated;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        this.lastUpdated = updatedAt;
+    }
+
     public boolean isActive() {
         return isActive;
     }
